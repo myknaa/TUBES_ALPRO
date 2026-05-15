@@ -39,30 +39,30 @@ func dataKarierAwal() []Karier {
 	return []Karier{
 		{
 			ID:       "K001",
-			Nama:     "Data Scientist",
+			Nama:     "Data_Scientist",
 			Industri: "Teknologi",
 			GajiRata: 15,
 			ReqMinat: []string{"Teknologi", "Matematika"},
 			ReqKeahlian: []SyaratKeahlian{
 				{"Python"},
 				{"Statistik"},
-				{"Machine Learning"},
+				{"Machine_Learning"},
 			},
 		},
 		{
 			ID:       "K002",
-			Nama:     "UI/UX Designer",
+			Nama:     "UI/UX_Designer",
 			Industri: "Teknologi",
 			GajiRata: 10,
 			ReqMinat: []string{"Desain", "Teknologi"},
 			ReqKeahlian: []SyaratKeahlian{
 				{"Figma"},
-				{"Riset Pengguna"},
+				{"Riset_Pengguna"},
 			},
 		},
 		{
 			ID:       "K003",
-			Nama:     "Dokter Umum",
+			Nama:     "Dokter_Umum",
 			Industri: "Kesehatan",
 			GajiRata: 12,
 			ReqMinat: []string{"Kesehatan", "Sains"},
@@ -73,7 +73,7 @@ func dataKarierAwal() []Karier {
 		},
 		{
 			ID:       "K004",
-			Nama:     "Guru Matematika",
+			Nama:     "Guru_Matematika",
 			Industri: "Pendidikan",
 			GajiRata: 6,
 			ReqMinat: []string{"Pendidikan", "Matematika"},
@@ -84,7 +84,7 @@ func dataKarierAwal() []Karier {
 		},
 		{
 			ID:       "K005",
-			Nama:     "Software Engineer",
+			Nama:     "Software_Engineer",
 			Industri: "Teknologi",
 			GajiRata: 18,
 			ReqMinat: []string{"Teknologi", "Logika"},
@@ -124,7 +124,7 @@ func dataKarierAwal() []Karier {
 			ReqMinat: []string{"Desain", "Sains"},
 			ReqKeahlian: []SyaratKeahlian{
 				{"AutoCAD"},
-				{"Desain Struktural"},
+				{"Desain_Struktural"},
 			},
 		},
 	}
