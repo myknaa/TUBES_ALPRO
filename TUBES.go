@@ -496,7 +496,7 @@ func cetakGaris() {
 func inputStr(prompt string) string {
 	fmt.Print(prompt)
 	var s string
-	fmt.Scanln(&s)
+	fmt.Scan(&s)
 	return s
 }
 
@@ -661,7 +661,7 @@ func main() {
 	fmt.Println()
 	fmt.Print("  Masukkan nama Anda: ")
 	var namaPengguna string
-	fmt.Scanln(&namaPengguna)
+	fmt.Scan(&namaPengguna)
 
 	user := &User{
 		ID:       "U001",
