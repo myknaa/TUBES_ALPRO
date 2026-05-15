@@ -7,8 +7,7 @@ import "fmt"
 // ============================================================
 
 type Keahlian struct {
-	Nama  string
-	Level int // 1–5
+	Nama string
 }
 
 type User struct {
@@ -19,8 +18,7 @@ type User struct {
 }
 
 type SyaratKeahlian struct {
-	Nama     string
-	MinLevel int
+	Nama string
 }
 
 type Karier struct {
@@ -41,59 +39,59 @@ func dataKarierAwal() []Karier {
 	return []Karier{
 		{
 			ID:       "K001",
-			Nama:     "Data_Scientist",
+			Nama:     "Data Scientist",
 			Industri: "Teknologi",
 			GajiRata: 15,
 			ReqMinat: []string{"Teknologi", "Matematika"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Python", 3},
-				{"Statistik", 3},
-				{"Machine_Learning", 2},
+				{"Python"},
+				{"Statistik"},
+				{"Machine Learning"},
 			},
 		},
 		{
 			ID:       "K002",
-			Nama:     "UI/UX_Designer",
+			Nama:     "UI/UX Designer",
 			Industri: "Teknologi",
 			GajiRata: 10,
 			ReqMinat: []string{"Desain", "Teknologi"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Figma", 3},
-				{"Riset_Pengguna", 2},
+				{"Figma"},
+				{"Riset Pengguna"},
 			},
 		},
 		{
 			ID:       "K003",
-			Nama:     "Dokter_Umum",
+			Nama:     "Dokter Umum",
 			Industri: "Kesehatan",
 			GajiRata: 12,
 			ReqMinat: []string{"Kesehatan", "Sains"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Anatomi", 4},
-				{"Farmakologi", 3},
+				{"Anatomi"},
+				{"Farmakologi"},
 			},
 		},
 		{
 			ID:       "K004",
-			Nama:     "Guru_Matematika",
+			Nama:     "Guru Matematika",
 			Industri: "Pendidikan",
 			GajiRata: 6,
 			ReqMinat: []string{"Pendidikan", "Matematika"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Matematika", 4},
-				{"Komunikasi", 3},
+				{"Matematika"},
+				{"Komunikasi"},
 			},
 		},
 		{
 			ID:       "K005",
-			Nama:     "Software_Engineer",
+			Nama:     "Software Engineer",
 			Industri: "Teknologi",
 			GajiRata: 18,
 			ReqMinat: []string{"Teknologi", "Logika"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Golang", 3},
-				{"Algoritma", 3},
-				{"Git", 2},
+				{"Golang"},
+				{"Algoritma"},
+				{"Git"},
 			},
 		},
 		{
@@ -103,8 +101,8 @@ func dataKarierAwal() []Karier {
 			GajiRata: 9,
 			ReqMinat: []string{"Keuangan", "Matematika"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Akuntansi", 4},
-				{"Excel", 3},
+				{"Akuntansi"},
+				{"Excel"},
 			},
 		},
 		{
@@ -114,8 +112,8 @@ func dataKarierAwal() []Karier {
 			GajiRata: 7,
 			ReqMinat: []string{"Menulis", "Komunikasi"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"Penulisan", 4},
-				{"Riset", 3},
+				{"Penulisan"},
+				{"Riset"},
 			},
 		},
 		{
@@ -125,8 +123,8 @@ func dataKarierAwal() []Karier {
 			GajiRata: 13,
 			ReqMinat: []string{"Desain", "Sains"},
 			ReqKeahlian: []SyaratKeahlian{
-				{"AutoCAD", 3},
-				{"Desain_Struktural", 3},
+				{"AutoCAD"},
+				{"Desain Struktural"},
 			},
 		},
 	}
@@ -165,20 +163,15 @@ func hapusMinat(user *User, minat string) {
 	fmt.Println("  [✓] Minat '" + minat + "' berhasil dihapus.")
 }
 
-func tambahKeahlian(user *User, nama string, level int) {
-	if level < 1 || level > 5 {
-		fmt.Println("  [!] Level harus antara 1–5.")
-		return
-	}
-	for i, k := range user.Keahlian {
+func tambahKeahlian(user *User, nama string) {
+	for _, k := range user.Keahlian {
 		if k.Nama == nama {
-			user.Keahlian[i].Level = level
-			fmt.Printf("  [✓] Keahlian '%s' diperbarui ke level %d.\n", nama, level)
+			fmt.Println("  [!] Keahlian '" + nama + "' sudah ada.")
 			return
 		}
 	}
-	user.Keahlian = append(user.Keahlian, Keahlian{nama, level})
-	fmt.Printf("  [✓] Keahlian '%s' (level %d) berhasil ditambahkan.\n", nama, level)
+	user.Keahlian = append(user.Keahlian, Keahlian{nama})
+	fmt.Println("  [✓] Keahlian '" + nama + "' berhasil ditambahkan.")
 }
 
 func hapusKeahlian(user *User, nama string) {
@@ -218,15 +211,8 @@ func tampilProfil(user *User) {
 	if len(user.Keahlian) == 0 {
 		fmt.Println("  │   (belum ada)")
 	} else {
-		for _, k := range user.Keahlian {
-			bintang := ""
-			for i := 0; i < k.Level; i++ {
-				bintang += "★"
-			}
-			for i := k.Level; i < 5; i++ {
-				bintang += "☆"
-			}
-			fmt.Printf("  │   %-20s %s (%d/5)\n", k.Nama, bintang, k.Level)
+		for i, k := range user.Keahlian {
+			fmt.Printf("  │   %d. %s\n", i+1, k.Nama)
 		}
 	}
 	fmt.Println("  └─────────────────────────────────────")
@@ -264,7 +250,7 @@ func hitungSkor(user *User, karier *Karier) float64 {
 		for _, rk := range karier.ReqKeahlian {
 			maksPoin += bobotPerKeahlian
 			for _, uk := range user.Keahlian {
-				if uk.Nama == rk.Nama && uk.Level >= rk.MinLevel {
+				if uk.Nama == rk.Nama {
 					totalPoin += bobotPerKeahlian
 					break
 				}
@@ -517,7 +503,7 @@ func menuManajemenData(user *User) {
 		fmt.Println("  1. Lihat profil")
 		fmt.Println("  2. Tambah minat")
 		fmt.Println("  3. Hapus minat")
-		fmt.Println("  4. Tambah / ubah keahlian")
+		fmt.Println("  4. Tambah keahlian")
 		fmt.Println("  5. Hapus keahlian")
 		fmt.Println("  0. Kembali")
 		cetakGaris()
@@ -535,8 +521,7 @@ func menuManajemenData(user *User) {
 			hapusMinat(user, minat)
 		case 4:
 			nama := inputStr("  Nama keahlian: ")
-			level := inputInt("  Level (1–5): ")
-			tambahKeahlian(user, nama, level)
+			tambahKeahlian(user, nama)
 		case 5:
 			tampilProfil(user)
 			nama := inputStr("  Keahlian yang dihapus: ")
@@ -588,7 +573,7 @@ func menuPencarian(daftarKarier []Karier) {
 				fmt.Printf("  Gaji rata : %d juta/bulan\n", k.GajiRata)
 				fmt.Println("  Syarat keahlian:")
 				for _, rk := range k.ReqKeahlian {
-					fmt.Printf("    - %-20s (min level %d)\n", rk.Nama, rk.MinLevel)
+					fmt.Printf("    - %s\n", rk.Nama)
 				}
 			}
 
