@@ -12,7 +12,7 @@ type Keahlian struct {
 }
 
 type User struct {
-	ID       string
+	ID       int
 	Nama     string
 	Minat    []string
 	Keahlian []Keahlian
