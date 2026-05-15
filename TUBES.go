@@ -3,6 +3,14 @@ package main
 import "fmt"
 
 // ============================================================
+// VARIABEL GLOBAL
+// ============================================================
+
+// daftarKarier dijadikan global agar fungsi validasi bisa mengakses
+// daftar minat dan keahlian yang valid tanpa perlu passing parameter ke mana-mana
+var daftarKarier []Karier
+
+// ============================================================
 // STRUCT / TIPE DATA
 // ============================================================
 
@@ -127,6 +135,154 @@ func dataKarierAwal() []Karier {
 				{"Desain_Struktural"},
 			},
 		},
+	}
+}
+
+// ============================================================
+// HELPER: DAFTAR VALID & VALIDASI INPUT
+// ============================================================
+
+// kumpulMinatValid mengumpulkan semua nilai ReqMinat unik dari seluruh data karier.
+func kumpulMinatValid() []string {
+	var hasil []string
+	for _, k := range daftarKarier {
+		for _, m := range k.ReqMinat {
+			sudahAda := false
+			for _, h := range hasil {
+				if h == m {
+					sudahAda = true
+					break
+				}
+			}
+			if !sudahAda {
+				hasil = append(hasil, m)
+			}
+		}
+	}
+	return hasil
+}
+
+// kumpulKeahlianValid mengumpulkan semua nama ReqKeahlian unik dari seluruh data karier.
+func kumpulKeahlianValid() []string {
+	var hasil []string
+	for _, k := range daftarKarier {
+		for _, rk := range k.ReqKeahlian {
+			sudahAda := false
+			for _, h := range hasil {
+				if h == rk.Nama {
+					sudahAda = true
+					break
+				}
+			}
+			if !sudahAda {
+				hasil = append(hasil, rk.Nama)
+			}
+		}
+	}
+	return hasil
+}
+
+// cetakDaftarMinat menampilkan semua minat yang valid dalam bentuk daftar bernomor.
+func cetakDaftarMinat() {
+	valid := kumpulMinatValid()
+	fmt.Println()
+	fmt.Println("  +---------------------------------------------+")
+	fmt.Println("  |         DAFTAR MINAT YANG TERSEDIA          |")
+	fmt.Println("  +---------------------------------------------+")
+	for i, m := range valid {
+		fmt.Printf("  |  %-3d. %-39s|\n", i+1, m)
+	}
+	fmt.Println("  +---------------------------------------------+")
+}
+
+// cetakDaftarKeahlian menampilkan semua keahlian yang valid dalam bentuk daftar bernomor.
+func cetakDaftarKeahlian() {
+	valid := kumpulKeahlianValid()
+	fmt.Println()
+	fmt.Println("  +---------------------------------------------+")
+	fmt.Println("  |        DAFTAR KEAHLIAN YANG TERSEDIA        |")
+	fmt.Println("  +---------------------------------------------+")
+	for i, k := range valid {
+		fmt.Printf("  |  %-3d. %-39s|\n", i+1, k)
+	}
+	fmt.Println("  +---------------------------------------------+")
+}
+
+// minatValid memeriksa apakah input cocok dengan salah satu minat valid (case-insensitive).
+func minatValid(input string) bool {
+	for _, m := range kumpulMinatValid() {
+		if toLower(m) == toLower(input) {
+			return true
+		}
+	}
+	return false
+}
+
+// keahlianValid memeriksa apakah input cocok dengan salah satu keahlian valid (case-insensitive).
+func keahlianValid(input string) bool {
+	for _, k := range kumpulKeahlianValid() {
+		if toLower(k) == toLower(input) {
+			return true
+		}
+	}
+	return false
+}
+
+// nilaiAsliMinat mengembalikan format asli string minat sesuai data karier.
+func nilaiAsliMinat(input string) string {
+	for _, m := range kumpulMinatValid() {
+		if toLower(m) == toLower(input) {
+			return m
+		}
+	}
+	return input
+}
+
+// nilaiAsliKeahlian mengembalikan format asli string keahlian sesuai data karier.
+func nilaiAsliKeahlian(input string) string {
+	for _, k := range kumpulKeahlianValid() {
+		if toLower(k) == toLower(input) {
+			return k
+		}
+	}
+	return input
+}
+
+// inputMinatValid menampilkan daftar lalu meminta input berulang sampai valid atau 'batal'.
+func inputMinatValid(prompt string) (string, bool) {
+	cetakDaftarMinat()
+	fmt.Println("  (Ketik 'batal' untuk membatalkan)")
+	for {
+		fmt.Print(prompt)
+		var s string
+		fmt.Scan(&s)
+		if toLower(s) == "batal" {
+			fmt.Println("  [!] Dibatalkan.")
+			return "", false
+		}
+		if minatValid(s) {
+			return nilaiAsliMinat(s), true
+		}
+		fmt.Println("  [!] Minat '" + s + "' tidak ada dalam daftar. Coba lagi atau ketik 'batal'.")
+	}
+}
+
+// inputKeahlianValid menampilkan daftar lalu meminta input berulang sampai valid atau 'batal'.
+func inputKeahlianValid(prompt string) (string, bool) {
+	cetakDaftarKeahlian()
+	fmt.Println("  (Ketik 'batal' untuk membatalkan)")
+	for {
+		fmt.Print(prompt)
+		var s string
+		fmt.Scan(&s)
+		if toLower(s) == "batal" {
+			fmt.Println("  [!] Dibatalkan.")
+			return "", false
+		}
+		if keahlianValid(s) {
+			return nilaiAsliKeahlian(s), true
+		}
+		fmt.Println("  [!] Keahlian '" + s + "' tidak ada dalam daftar. Coba lagi atau ketik 'batal'.")
 	}
 }
 
@@ -513,19 +669,27 @@ func menuManajemenData(user *User) {
 		case 1:
 			tampilProfil(user)
 		case 2:
-			minat := inputStr("  Masukkan minat baru: ")
-			tambahMinat(user, minat)
+			// Tampilkan daftar valid, lalu validasi input — ulangi sampai benar atau 'batal'
+			if minat, ok := inputMinatValid("  Pilih minat: "); ok {
+				tambahMinat(user, minat)
+			}
 		case 3:
 			tampilProfil(user)
-			minat := inputStr("  Minat yang dihapus: ")
-			hapusMinat(user, minat)
+			if len(user.Minat) > 0 {
+				minat := inputStr("  Minat yang dihapus: ")
+				hapusMinat(user, minat)
+			}
 		case 4:
-			nama := inputStr("  Nama keahlian: ")
-			tambahKeahlian(user, nama)
+			// Tampilkan daftar valid, lalu validasi input — ulangi sampai benar atau 'batal'
+			if nama, ok := inputKeahlianValid("  Pilih keahlian: "); ok {
+				tambahKeahlian(user, nama)
+			}
 		case 5:
 			tampilProfil(user)
-			nama := inputStr("  Keahlian yang dihapus: ")
-			hapusKeahlian(user, nama)
+			if len(user.Keahlian) > 0 {
+				nama := inputStr("  Keahlian yang dihapus: ")
+				hapusKeahlian(user, nama)
+			}
 		case 0:
 			return
 		default:
@@ -538,7 +702,7 @@ func menuManajemenData(user *User) {
 // MENU PENCARIAN
 // ============================================================
 
-func menuPencarian(daftarKarier []Karier) {
+func menuPencarian() {
 	for {
 		cetakHeader("CARI KARIER")
 		fmt.Println("  1. Sequential Search (nama/industri)")
@@ -589,7 +753,7 @@ func menuPencarian(daftarKarier []Karier) {
 // MENU PENGURUTAN
 // ============================================================
 
-func menuPengurutan(user *User, daftarKarier []Karier) {
+func menuPengurutan(user *User) {
 	for {
 		cetakHeader("URUTKAN REKOMENDASI")
 		fmt.Println("  1. Selection Sort — berdasarkan gaji (tertinggi)")
@@ -636,7 +800,7 @@ func menuPengurutan(user *User, daftarKarier []Karier) {
 // ============================================================
 
 func main() {
-	daftarKarier := dataKarierAwal()
+	daftarKarier = dataKarierAwal()
 
 	// Setup pengguna awal
 	fmt.Println("  ╔══════════════════════════════════════════╗")
@@ -686,10 +850,10 @@ func main() {
 			}
 
 		case 3:
-			menuPencarian(daftarKarier)
+			menuPencarian()
 
 		case 4:
-			menuPengurutan(user, daftarKarier)
+			menuPengurutan(user)
 
 		case 5:
 			cetakHeader("STATISTIK KECOCOKAN")
