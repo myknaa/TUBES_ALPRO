@@ -3,451 +3,216 @@ package main
 import "fmt"
 
 // ============================================================
-// VARIABEL GLOBAL
+// KONSTANTA & TIPE DATA
 // ============================================================
 
-// daftarKarier dijadikan global agar fungsi validasi bisa mengakses
-// daftar minat dan keahlian yang valid tanpa perlu passing parameter ke mana-mana
-var daftarKarier []Karier
+const (
+	MAX_KARIER           = 8  // jumlah karier dalam database
+	MAX_SYARAT           = 5  // maks syarat minat/keahlian per karier
+	MAX_PROFIL           = 15 // maks minat/keahlian yang bisa dimiliki user
+	MAX_PILIHAN_MINAT    = 12 // total pilihan minat yang tersedia
+	MAX_PILIHAN_KEAHLIAN = 20 // total pilihan keahlian yang tersedia
+)
 
-// ============================================================
-// STRUCT / TIPE DATA
-// ============================================================
-
-type Keahlian struct {
-	Nama string
+type Karier struct {
+	ID             string
+	Nama           string
+	Industri       string
+	GajiRata       int
+	ReqMinat       [MAX_SYARAT]string
+	JmlReqMinat    int
+	ReqKeahlian    [MAX_SYARAT]string
+	JmlReqKeahlian int
+	SkorCocok      float64
 }
 
 type User struct {
-	ID       string
-	Nama     string
-	Minat    []string
-	Keahlian []Keahlian
-}
-
-type SyaratKeahlian struct {
-	Nama string
-}
-
-type Karier struct {
-	ID          string
-	Nama        string
-	Industri    string
-	GajiRata    int // dalam juta IDR
-	ReqMinat    []string
-	ReqKeahlian []SyaratKeahlian
-	SkorCocok   float64 // dihitung dinamis
+	Nama           string
+	Minat          [MAX_PROFIL]string
+	JumlahMinat    int
+	Keahlian       [MAX_PROFIL]string
+	JumlahKeahlian int
 }
 
 // ============================================================
-// DATA AWAL (seed)
+// VARIABEL GLOBAL
 // ============================================================
 
-func dataKarierAwal() []Karier {
-	return []Karier{
-		{
-			ID:       "K001",
-			Nama:     "Data_Scientist",
-			Industri: "Teknologi",
-			GajiRata: 15,
-			ReqMinat: []string{"Teknologi", "Matematika"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Python"},
-				{"Statistik"},
-				{"Machine_Learning"},
-			},
-		},
-		{
-			ID:       "K002",
-			Nama:     "UI/UX_Designer",
-			Industri: "Teknologi",
-			GajiRata: 10,
-			ReqMinat: []string{"Desain", "Teknologi"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Figma"},
-				{"Riset_Pengguna"},
-			},
-		},
-		{
-			ID:       "K003",
-			Nama:     "Dokter_Umum",
-			Industri: "Kesehatan",
-			GajiRata: 12,
-			ReqMinat: []string{"Kesehatan", "Sains"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Anatomi"},
-				{"Farmakologi"},
-			},
-		},
-		{
-			ID:       "K004",
-			Nama:     "Guru_Matematika",
-			Industri: "Pendidikan",
-			GajiRata: 6,
-			ReqMinat: []string{"Pendidikan", "Matematika"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Matematika"},
-				{"Komunikasi"},
-			},
-		},
-		{
-			ID:       "K005",
-			Nama:     "Software_Engineer",
-			Industri: "Teknologi",
-			GajiRata: 18,
-			ReqMinat: []string{"Teknologi", "Logika"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Golang"},
-				{"Algoritma"},
-				{"Git"},
-			},
-		},
-		{
-			ID:       "K006",
-			Nama:     "Akuntan",
-			Industri: "Keuangan",
-			GajiRata: 9,
-			ReqMinat: []string{"Keuangan", "Matematika"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Akuntansi"},
-				{"Excel"},
-			},
-		},
-		{
-			ID:       "K007",
-			Nama:     "Jurnalis",
-			Industri: "Media",
-			GajiRata: 7,
-			ReqMinat: []string{"Menulis", "Komunikasi"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"Penulisan"},
-				{"Riset"},
-			},
-		},
-		{
-			ID:       "K008",
-			Nama:     "Arsitek",
-			Industri: "Konstruksi",
-			GajiRata: 13,
-			ReqMinat: []string{"Desain", "Sains"},
-			ReqKeahlian: []SyaratKeahlian{
-				{"AutoCAD"},
-				{"Desain_Struktural"},
-			},
-		},
-	}
+var daftarKarier [MAX_KARIER]Karier
+var jumlahKarier int
+
+// Daftar pilihan minat dan keahlian yang bisa dipilih user
+var pilihanMinat [MAX_PILIHAN_MINAT]string
+var jumlahPilihanMinat int
+var pilihanKeahlian [MAX_PILIHAN_KEAHLIAN]string
+var jumlahPilihanKeahlian int
+
+// ============================================================
+// INISIALISASI DATA
+// ============================================================
+
+func initData() {
+	// --- Data Karier ---
+
+	daftarKarier[0].ID = "K001"
+	daftarKarier[0].Nama = "Data_Scientist"
+	daftarKarier[0].Industri = "Teknologi"
+	daftarKarier[0].GajiRata = 15
+	daftarKarier[0].ReqMinat[0] = "Teknologi"
+	daftarKarier[0].ReqMinat[1] = "Matematika"
+	daftarKarier[0].JmlReqMinat = 2
+	daftarKarier[0].ReqKeahlian[0] = "Python"
+	daftarKarier[0].ReqKeahlian[1] = "Statistik"
+	daftarKarier[0].ReqKeahlian[2] = "Machine_Learning"
+	daftarKarier[0].JmlReqKeahlian = 3
+
+	daftarKarier[1].ID = "K002"
+	daftarKarier[1].Nama = "UI/UX_Designer"
+	daftarKarier[1].Industri = "Teknologi"
+	daftarKarier[1].GajiRata = 10
+	daftarKarier[1].ReqMinat[0] = "Desain"
+	daftarKarier[1].ReqMinat[1] = "Teknologi"
+	daftarKarier[1].JmlReqMinat = 2
+	daftarKarier[1].ReqKeahlian[0] = "Figma"
+	daftarKarier[1].ReqKeahlian[1] = "Riset_Pengguna"
+	daftarKarier[1].JmlReqKeahlian = 2
+
+	daftarKarier[2].ID = "K003"
+	daftarKarier[2].Nama = "Dokter_Umum"
+	daftarKarier[2].Industri = "Kesehatan"
+	daftarKarier[2].GajiRata = 12
+	daftarKarier[2].ReqMinat[0] = "Kesehatan"
+	daftarKarier[2].ReqMinat[1] = "Sains"
+	daftarKarier[2].JmlReqMinat = 2
+	daftarKarier[2].ReqKeahlian[0] = "Anatomi"
+	daftarKarier[2].ReqKeahlian[1] = "Farmakologi"
+	daftarKarier[2].JmlReqKeahlian = 2
+
+	daftarKarier[3].ID = "K004"
+	daftarKarier[3].Nama = "Guru_Matematika"
+	daftarKarier[3].Industri = "Pendidikan"
+	daftarKarier[3].GajiRata = 6
+	daftarKarier[3].ReqMinat[0] = "Pendidikan"
+	daftarKarier[3].ReqMinat[1] = "Matematika"
+	daftarKarier[3].JmlReqMinat = 2
+	daftarKarier[3].ReqKeahlian[0] = "Matematika"
+	daftarKarier[3].ReqKeahlian[1] = "Komunikasi"
+	daftarKarier[3].JmlReqKeahlian = 2
+
+	daftarKarier[4].ID = "K005"
+	daftarKarier[4].Nama = "Software_Engineer"
+	daftarKarier[4].Industri = "Teknologi"
+	daftarKarier[4].GajiRata = 18
+	daftarKarier[4].ReqMinat[0] = "Teknologi"
+	daftarKarier[4].ReqMinat[1] = "Logika"
+	daftarKarier[4].JmlReqMinat = 2
+	daftarKarier[4].ReqKeahlian[0] = "Golang"
+	daftarKarier[4].ReqKeahlian[1] = "Algoritma"
+	daftarKarier[4].ReqKeahlian[2] = "Git"
+	daftarKarier[4].JmlReqKeahlian = 3
+
+	daftarKarier[5].ID = "K006"
+	daftarKarier[5].Nama = "Akuntan"
+	daftarKarier[5].Industri = "Keuangan"
+	daftarKarier[5].GajiRata = 9
+	daftarKarier[5].ReqMinat[0] = "Keuangan"
+	daftarKarier[5].ReqMinat[1] = "Matematika"
+	daftarKarier[5].JmlReqMinat = 2
+	daftarKarier[5].ReqKeahlian[0] = "Akuntansi"
+	daftarKarier[5].ReqKeahlian[1] = "Excel"
+	daftarKarier[5].JmlReqKeahlian = 2
+
+	daftarKarier[6].ID = "K007"
+	daftarKarier[6].Nama = "Jurnalis"
+	daftarKarier[6].Industri = "Media"
+	daftarKarier[6].GajiRata = 7
+	daftarKarier[6].ReqMinat[0] = "Menulis"
+	daftarKarier[6].ReqMinat[1] = "Komunikasi"
+	daftarKarier[6].JmlReqMinat = 2
+	daftarKarier[6].ReqKeahlian[0] = "Penulisan"
+	daftarKarier[6].ReqKeahlian[1] = "Riset"
+	daftarKarier[6].JmlReqKeahlian = 2
+
+	daftarKarier[7].ID = "K008"
+	daftarKarier[7].Nama = "Arsitek"
+	daftarKarier[7].Industri = "Konstruksi"
+	daftarKarier[7].GajiRata = 13
+	daftarKarier[7].ReqMinat[0] = "Desain"
+	daftarKarier[7].ReqMinat[1] = "Sains"
+	daftarKarier[7].JmlReqMinat = 2
+	daftarKarier[7].ReqKeahlian[0] = "AutoCAD"
+	daftarKarier[7].ReqKeahlian[1] = "Desain_Struktural"
+	daftarKarier[7].JmlReqKeahlian = 2
+
+	jumlahKarier = 8
+
+	// --- Pilihan Minat (dikumpulkan manual dari data di atas) ---
+	pilihanMinat[0] = "Teknologi"
+	pilihanMinat[1] = "Matematika"
+	pilihanMinat[2] = "Desain"
+	pilihanMinat[3] = "Kesehatan"
+	pilihanMinat[4] = "Sains"
+	pilihanMinat[5] = "Pendidikan"
+	pilihanMinat[6] = "Logika"
+	pilihanMinat[7] = "Keuangan"
+	pilihanMinat[8] = "Menulis"
+	pilihanMinat[9] = "Komunikasi"
+	jumlahPilihanMinat = 10
+
+	// --- Pilihan Keahlian ---
+	pilihanKeahlian[0] = "Python"
+	pilihanKeahlian[1] = "Statistik"
+	pilihanKeahlian[2] = "Machine_Learning"
+	pilihanKeahlian[3] = "Figma"
+	pilihanKeahlian[4] = "Riset_Pengguna"
+	pilihanKeahlian[5] = "Anatomi"
+	pilihanKeahlian[6] = "Farmakologi"
+	pilihanKeahlian[7] = "Matematika"
+	pilihanKeahlian[8] = "Komunikasi"
+	pilihanKeahlian[9] = "Golang"
+	pilihanKeahlian[10] = "Algoritma"
+	pilihanKeahlian[11] = "Git"
+	pilihanKeahlian[12] = "Akuntansi"
+	pilihanKeahlian[13] = "Excel"
+	pilihanKeahlian[14] = "Penulisan"
+	pilihanKeahlian[15] = "Riset"
+	pilihanKeahlian[16] = "AutoCAD"
+	pilihanKeahlian[17] = "Desain_Struktural"
+	jumlahPilihanKeahlian = 18
 }
 
 // ============================================================
-// HELPER: DAFTAR VALID & VALIDASI INPUT
+// HELPER: INPUT & TAMPILAN
 // ============================================================
 
-// kumpulMinatValid mengumpulkan semua nilai ReqMinat unik dari seluruh data karier.
-func kumpulMinatValid() []string {
-	var hasil []string
-	for _, k := range daftarKarier {
-		for _, m := range k.ReqMinat {
-			sudahAda := false
-			for _, h := range hasil {
-				if h == m {
-					sudahAda = true
-					break
-				}
-			}
-			if !sudahAda {
-				hasil = append(hasil, m)
-			}
-		}
-	}
-	return hasil
-}
-
-// kumpulKeahlianValid mengumpulkan semua nama ReqKeahlian unik dari seluruh data karier.
-func kumpulKeahlianValid() []string {
-	var hasil []string
-	for _, k := range daftarKarier {
-		for _, rk := range k.ReqKeahlian {
-			sudahAda := false
-			for _, h := range hasil {
-				if h == rk.Nama {
-					sudahAda = true
-					break
-				}
-			}
-			if !sudahAda {
-				hasil = append(hasil, rk.Nama)
-			}
-		}
-	}
-	return hasil
-}
-
-// cetakDaftarMinat menampilkan semua minat yang valid dalam bentuk daftar bernomor.
-func cetakDaftarMinat() {
-	valid := kumpulMinatValid()
-	fmt.Println()
-	fmt.Println("  +---------------------------------------------+")
-	fmt.Println("  |         DAFTAR MINAT YANG TERSEDIA          |")
-	fmt.Println("  +---------------------------------------------+")
-	for i, m := range valid {
-		fmt.Printf("  |  %-3d. %-39s|\n", i+1, m)
-	}
-	fmt.Println("  +---------------------------------------------+")
-}
-
-// cetakDaftarKeahlian menampilkan semua keahlian yang valid dalam bentuk daftar bernomor.
-func cetakDaftarKeahlian() {
-	valid := kumpulKeahlianValid()
-	fmt.Println()
-	fmt.Println("  +---------------------------------------------+")
-	fmt.Println("  |        DAFTAR KEAHLIAN YANG TERSEDIA        |")
-	fmt.Println("  +---------------------------------------------+")
-	for i, k := range valid {
-		fmt.Printf("  |  %-3d. %-39s|\n", i+1, k)
-	}
-	fmt.Println("  +---------------------------------------------+")
-}
-
-// minatValid memeriksa apakah input cocok dengan salah satu minat valid (case-insensitive).
-func minatValid(input string) bool {
-	for _, m := range kumpulMinatValid() {
-		if toLower(m) == toLower(input) {
-			return true
-		}
-	}
-	return false
-}
-
-// keahlianValid memeriksa apakah input cocok dengan salah satu keahlian valid (case-insensitive).
-func keahlianValid(input string) bool {
-	for _, k := range kumpulKeahlianValid() {
-		if toLower(k) == toLower(input) {
-			return true
-		}
-	}
-	return false
-}
-
-// nilaiAsliMinat mengembalikan format asli string minat sesuai data karier.
-func nilaiAsliMinat(input string) string {
-	for _, m := range kumpulMinatValid() {
-		if toLower(m) == toLower(input) {
-			return m
-		}
-	}
-	return input
-}
-
-// nilaiAsliKeahlian mengembalikan format asli string keahlian sesuai data karier.
-func nilaiAsliKeahlian(input string) string {
-	for _, k := range kumpulKeahlianValid() {
-		if toLower(k) == toLower(input) {
-			return k
-		}
-	}
-	return input
-}
-
-// inputMinatValid menampilkan daftar lalu meminta input berulang sampai valid atau 'batal'.
-func inputMinatValid(prompt string) (string, bool) {
-	cetakDaftarMinat()
-	fmt.Println("  (Ketik 'batal' untuk membatalkan)")
+// inputInt membaca angka dari user. Kalau input bukan angka,
+// minta ulang terus sampai benar.
+func inputInt(prompt string) int {
+	var s string
+	var n int
 	for {
 		fmt.Print(prompt)
-		var s string
 		fmt.Scan(&s)
-		if toLower(s) == "batal" {
-			fmt.Println("  [!] Dibatalkan.")
-			return "", false
+		jumlah, _ := fmt.Sscan(s, &n)
+		if jumlah == 1 {
+			return n
 		}
-		if minatValid(s) {
-			return nilaiAsliMinat(s), true
-		}
-		fmt.Println("  [!] Minat '" + s + "' tidak ada dalam daftar. Coba lagi atau ketik 'batal'.")
+		fmt.Println("  [!] Masukkan angka yang valid.")
 	}
 }
 
-// inputKeahlianValid menampilkan daftar lalu meminta input berulang sampai valid atau 'batal'.
-func inputKeahlianValid(prompt string) (string, bool) {
-	cetakDaftarKeahlian()
-	fmt.Println("  (Ketik 'batal' untuk membatalkan)")
-	for {
-		fmt.Print(prompt)
-		var s string
-		fmt.Scan(&s)
-		if toLower(s) == "batal" {
-			fmt.Println("  [!] Dibatalkan.")
-			return "", false
-		}
-		if keahlianValid(s) {
-			return nilaiAsliKeahlian(s), true
-		}
-		fmt.Println("  [!] Keahlian '" + s + "' tidak ada dalam daftar. Coba lagi atau ketik 'batal'.")
-	}
-}
-
-// ============================================================
-// MODUL MANAJEMEN DATA (Spesifikasi a)
-// ============================================================
-
-func tambahMinat(user *User, minat string) {
-	for _, m := range user.Minat {
-		if m == minat {
-			fmt.Println("  [!] Minat '" + minat + "' sudah ada.")
-			return
-		}
-	}
-	user.Minat = append(user.Minat, minat)
-	fmt.Println("  [✓] Minat '" + minat + "' berhasil ditambahkan.")
-}
-
-func hapusMinat(user *User, minat string) {
-	baru := []string{}
-	ditemukan := false
-	for _, m := range user.Minat {
-		if m == minat {
-			ditemukan = true
-		} else {
-			baru = append(baru, m)
-		}
-	}
-	if !ditemukan {
-		fmt.Println("  [!] Minat '" + minat + "' tidak ditemukan.")
-		return
-	}
-	user.Minat = baru
-	fmt.Println("  [✓] Minat '" + minat + "' berhasil dihapus.")
-}
-
-func tambahKeahlian(user *User, nama string) {
-	for _, k := range user.Keahlian {
-		if k.Nama == nama {
-			fmt.Println("  [!] Keahlian '" + nama + "' sudah ada.")
-			return
-		}
-	}
-	user.Keahlian = append(user.Keahlian, Keahlian{nama})
-	fmt.Println("  [✓] Keahlian '" + nama + "' berhasil ditambahkan.")
-}
-
-func hapusKeahlian(user *User, nama string) {
-	baru := []Keahlian{}
-	ditemukan := false
-	for _, k := range user.Keahlian {
-		if k.Nama == nama {
-			ditemukan = true
-		} else {
-			baru = append(baru, k)
-		}
-	}
-	if !ditemukan {
-		fmt.Println("  [!] Keahlian '" + nama + "' tidak ditemukan.")
-		return
-	}
-	user.Keahlian = baru
-	fmt.Println("  [✓] Keahlian '" + nama + "' berhasil dihapus.")
-}
-
-func tampilProfil(user *User) {
-	fmt.Println("  ┌─────────────────────────────────────")
-	fmt.Printf("  │ Nama : %s (ID: %s)\n", user.Nama, user.ID)
-	fmt.Print("  │ Minat: ")
-	if len(user.Minat) == 0 {
-		fmt.Println("(belum ada)")
-	} else {
-		for i, m := range user.Minat {
-			if i > 0 {
-				fmt.Print(", ")
-			}
-			fmt.Print(m)
-		}
-		fmt.Println()
-	}
-	fmt.Println("  │ Keahlian:")
-	if len(user.Keahlian) == 0 {
-		fmt.Println("  │   (belum ada)")
-	} else {
-		for i, k := range user.Keahlian {
-			fmt.Printf("  │   %d. %s\n", i+1, k.Nama)
-		}
-	}
-	fmt.Println("  └─────────────────────────────────────")
-}
-
-// ============================================================
-// MODUL REKOMENDASI & STATISTIK (Spesifikasi b & e)
-// ============================================================
-
-func hitungSkor(user *User, karier *Karier) float64 {
-	if len(karier.ReqMinat) == 0 && len(karier.ReqKeahlian) == 0 {
-		return 0
-	}
-
-	totalPoin := 0.0
-	maksPoin := 0.0
-
-	// Komponen minat: bobot 40%
-	if len(karier.ReqMinat) > 0 {
-		bobotPerMinat := 40.0 / float64(len(karier.ReqMinat))
-		for _, rm := range karier.ReqMinat {
-			maksPoin += bobotPerMinat
-			for _, um := range user.Minat {
-				if um == rm {
-					totalPoin += bobotPerMinat
-					break
-				}
-			}
-		}
-	}
-
-	// Komponen keahlian: bobot 60%
-	if len(karier.ReqKeahlian) > 0 {
-		bobotPerKeahlian := 60.0 / float64(len(karier.ReqKeahlian))
-		for _, rk := range karier.ReqKeahlian {
-			maksPoin += bobotPerKeahlian
-			for _, uk := range user.Keahlian {
-				if uk.Nama == rk.Nama {
-					totalPoin += bobotPerKeahlian
-					break
-				}
-			}
-		}
-	}
-
-	if maksPoin == 0 {
-		return 0
-	}
-	skor := (totalPoin / maksPoin) * 100
-	karier.SkorCocok = skor
-	return skor
-}
-
-func hitungSemuaRekomendasi(user *User, daftarKarier []Karier) []Karier {
-	hasil := []Karier{}
-	for i := range daftarKarier {
-		hitungSkor(user, &daftarKarier[i])
-		if daftarKarier[i].SkorCocok > 0 {
-			hasil = append(hasil, daftarKarier[i])
-		}
-	}
-	return hasil
-}
-
-func tampilRekomendasi(daftar []Karier) {
-	if len(daftar) == 0 {
-		fmt.Println("  [!] Tidak ada rekomendasi yang ditemukan.")
-		return
-	}
+func cetakHeader(judul string) {
 	fmt.Println()
-	fmt.Println("  No  Nama Karier           Industri       Gaji(jt)  Kecocokan")
-	fmt.Println("  ─────────────────────────────────────────────────────────────")
-	for i, k := range daftar {
-		bar := buatBar(k.SkorCocok, 10)
-		fmt.Printf("  %-3d %-22s %-15s %-9d %s %.1f%%\n",
-			i+1, k.Nama, k.Industri, k.GajiRata, bar, k.SkorCocok)
-	}
+	fmt.Println("  +------------------------------------------+")
+	fmt.Printf("  |  %-42s|\n", judul)
+	fmt.Println("  +------------------------------------------+")
 }
 
+func cetakGaris() {
+	fmt.Println("  ------------------------------------------")
+}
+
+// buatBar membuat visualisasi bar █ berdasarkan persentase
 func buatBar(persen float64, panjang int) string {
 	isi := int(persen / 100.0 * float64(panjang))
 	bar := "["
@@ -462,68 +227,21 @@ func buatBar(persen float64, panjang int) string {
 	return bar
 }
 
-func tampilStatistik(user *User, daftarKarier []Karier) {
-	fmt.Println()
-	fmt.Println("  ╔══════════════════════════════════════════╗")
-	fmt.Println("  ║         STATISTIK KECOCOKAN KARIER       ║")
-	fmt.Println("  ╠══════════════════════════════════════════╣")
-
-	total := 0.0
-	maks := 0.0
-	namaMaks := ""
-	for i := range daftarKarier {
-		hitungSkor(user, &daftarKarier[i])
-		total += daftarKarier[i].SkorCocok
-		if daftarKarier[i].SkorCocok > maks {
-			maks = daftarKarier[i].SkorCocok
-			namaMaks = daftarKarier[i].Nama
-		}
-	}
-
-	rataRata := 0.0
-	if len(daftarKarier) > 0 {
-		rataRata = total / float64(len(daftarKarier))
-	}
-
-	for _, k := range daftarKarier {
-		bar := buatBar(k.SkorCocok, 15)
-		fmt.Printf("  ║  %-22s %s %.1f%%\n", k.Nama, bar, k.SkorCocok)
-	}
-
-	fmt.Println("  ╠══════════════════════════════════════════╣")
-	fmt.Printf("  ║  Rata-rata kecocokan  : %.1f%%\n", rataRata)
-	fmt.Printf("  ║  Karier terbaik       : %s (%.1f%%)\n", namaMaks, maks)
-	fmt.Printf("  ║  Total karier dianalisis: %d\n", len(daftarKarier))
-	fmt.Println("  ╚══════════════════════════════════════════╝")
-}
-
-// ============================================================
-// MODUL PENCARIAN (Spesifikasi c)
-// ============================================================
-
-// toLower manual tanpa library strings
-func toLower(s string) string {
-	hasil := []byte(s)
-	for i, c := range hasil {
-		if c >= 'A' && c <= 'Z' {
-			hasil[i] = c + 32
-		}
-	}
-	return string(hasil)
-}
-
-// contains manual tanpa library strings
-func contains(s, sub string) bool {
-	if len(sub) == 0 {
+// ada memeriksa apakah 'kata' ada di dalam 'kalimat'
+// menggunakan perbandingan karakter satu per satu (case-sensitive)
+func ada(kalimat, kata string) bool {
+	pKalimat := len(kalimat)
+	pKata := len(kata)
+	if pKata == 0 {
 		return true
 	}
-	if len(sub) > len(s) {
+	if pKata > pKalimat {
 		return false
 	}
-	for i := 0; i <= len(s)-len(sub); i++ {
+	for i := 0; i <= pKalimat-pKata; i++ {
 		cocok := true
-		for j := 0; j < len(sub); j++ {
-			if s[i+j] != sub[j] {
+		for j := 0; j < pKata; j++ {
+			if kalimat[i+j] != kata[j] {
 				cocok = false
 				break
 			}
@@ -535,125 +253,165 @@ func contains(s, sub string) bool {
 	return false
 }
 
-// Sequential Search: cari berdasarkan nama atau industri
-func sequentialSearch(daftar []Karier, query string) []Karier {
-	hasil := []Karier{}
-	q := toLower(query)
-	for _, k := range daftar {
-		if contains(toLower(k.Nama), q) || contains(toLower(k.Industri), q) {
-			hasil = append(hasil, k)
-		}
-	}
-	return hasil
-}
-
-// Urutkan alfabet untuk keperluan Binary Search
-func urutAlfabet(daftar []Karier) []Karier {
-	salinan := make([]Karier, len(daftar))
-	copy(salinan, daftar)
-	// Insertion sort untuk mengurutkan A–Z berdasarkan nama
-	for i := 1; i < len(salinan); i++ {
-		kunci := salinan[i]
-		j := i - 1
-		for j >= 0 && toLower(salinan[j].Nama) > toLower(kunci.Nama) {
-			salinan[j+1] = salinan[j]
-			j--
-		}
-		salinan[j+1] = kunci
-	}
-	return salinan
-}
-
-// Binary Search: cari berdasarkan nama tepat (data harus terurut A–Z)
-func binarySearch(daftarTerurut []Karier, target string) int {
-	kiri := 0
-	kanan := len(daftarTerurut) - 1
-	targetLower := toLower(target)
-	for kiri <= kanan {
-		tengah := (kiri + kanan) / 2
-		val := toLower(daftarTerurut[tengah].Nama)
-		if val == targetLower {
-			return tengah
-		} else if val < targetLower {
-			kiri = tengah + 1
-		} else {
-			kanan = tengah - 1
-		}
-	}
-	return -1
-}
-
 // ============================================================
-// MODUL PENGURUTAN (Spesifikasi d)
+// MODUL 1: KELOLA PROFIL (Spesifikasi a)
 // ============================================================
 
-// Selection Sort: urutkan berdasarkan gaji rata-rata (tertinggi ke terendah)
-func selectionSortGaji(daftar []Karier) []Karier {
-	salinan := make([]Karier, len(daftar))
-	copy(salinan, daftar)
-	n := len(salinan)
-	for i := 0; i < n-1; i++ {
-		idxMaks := i
-		for j := i + 1; j < n; j++ {
-			if salinan[j].GajiRata > salinan[idxMaks].GajiRata {
-				idxMaks = j
-			}
-		}
-		salinan[i], salinan[idxMaks] = salinan[idxMaks], salinan[i]
-	}
-	return salinan
-}
-
-// Insertion Sort: urutkan berdasarkan skor kecocokan (tertinggi ke terendah)
-func insertionSortSkor(daftar []Karier) []Karier {
-	salinan := make([]Karier, len(daftar))
-	copy(salinan, daftar)
-	for i := 1; i < len(salinan); i++ {
-		kunci := salinan[i]
-		j := i - 1
-		for j >= 0 && salinan[j].SkorCocok < kunci.SkorCocok {
-			salinan[j+1] = salinan[j]
-			j--
-		}
-		salinan[j+1] = kunci
-	}
-	return salinan
-}
-
-// ============================================================
-// TAMPILAN HELPER
-// ============================================================
-
-func cetakHeader(judul string) {
+func tampilProfil(user *User) {
 	fmt.Println()
-	fmt.Println("  ┌──────────────────────────────────────────┐")
-	fmt.Printf("  │  %-42s│\n", judul)
-	fmt.Println("  └──────────────────────────────────────────┘")
+	fmt.Println("  +-------------------------------------+")
+	fmt.Printf("  |  Nama     : %-23s|\n", user.Nama)
+	fmt.Println("  |  Minat    :                          |")
+	if user.JumlahMinat == 0 {
+		fmt.Println("  |    (belum ada)                       |")
+	} else {
+		for i := 0; i < user.JumlahMinat; i++ {
+			fmt.Printf("  |    %d. %-31s|\n", i+1, user.Minat[i])
+		}
+	}
+	fmt.Println("  |  Keahlian :                          |")
+	if user.JumlahKeahlian == 0 {
+		fmt.Println("  |    (belum ada)                       |")
+	} else {
+		for i := 0; i < user.JumlahKeahlian; i++ {
+			fmt.Printf("  |    %d. %-31s|\n", i+1, user.Keahlian[i])
+		}
+	}
+	fmt.Println("  +-------------------------------------+")
 }
 
-func cetakGaris() {
-	fmt.Println("  ──────────────────────────────────────────────")
+func tambahMinat(user *User) {
+	if user.JumlahMinat >= MAX_PROFIL {
+		fmt.Println("  [!] Daftar minat sudah penuh.")
+		return
+	}
+
+	// Tampilkan daftar pilihan minat yang tersedia
+	fmt.Println()
+	fmt.Println("  Pilihan minat yang tersedia:")
+	cetakGaris()
+	for i := 0; i < jumlahPilihanMinat; i++ {
+		fmt.Printf("  %2d. %s\n", i+1, pilihanMinat[i])
+	}
+	cetakGaris()
+
+	// User pilih nomor -> tidak bisa typo
+	nomor := inputInt("  Pilih nomor minat: ")
+	if nomor < 1 || nomor > jumlahPilihanMinat {
+		fmt.Println("  [!] Nomor tidak valid.")
+		return
+	}
+	minat := pilihanMinat[nomor-1]
+
+	// Cek apakah minat sudah ada di profil
+	for i := 0; i < user.JumlahMinat; i++ {
+		if user.Minat[i] == minat {
+			fmt.Println("  [!] Minat '" + minat + "' sudah ada di profil.")
+			return
+		}
+	}
+
+	user.Minat[user.JumlahMinat] = minat
+	user.JumlahMinat++
+	fmt.Println("  [v] Minat '" + minat + "' berhasil ditambahkan.")
 }
 
-func inputStr(prompt string) string {
-	fmt.Print(prompt)
-	var s string
-	fmt.Scan(&s)
-	return s
+func hapusMinat(user *User) {
+	if user.JumlahMinat == 0 {
+		fmt.Println("  [!] Belum ada minat di profil.")
+		return
+	}
+
+	// Tampilkan minat user saat ini
+	fmt.Println()
+	fmt.Println("  Minat Anda saat ini:")
+	cetakGaris()
+	for i := 0; i < user.JumlahMinat; i++ {
+		fmt.Printf("  %2d. %s\n", i+1, user.Minat[i])
+	}
+	cetakGaris()
+
+	nomor := inputInt("  Pilih nomor minat yang dihapus: ")
+	if nomor < 1 || nomor > user.JumlahMinat {
+		fmt.Println("  [!] Nomor tidak valid.")
+		return
+	}
+
+	hapus := user.Minat[nomor-1]
+	// Geser semua elemen di belakangnya ke kiri
+	for i := nomor - 1; i < user.JumlahMinat-1; i++ {
+		user.Minat[i] = user.Minat[i+1]
+	}
+	user.Minat[user.JumlahMinat-1] = ""
+	user.JumlahMinat--
+	fmt.Println("  [v] Minat '" + hapus + "' berhasil dihapus.")
 }
 
-func inputInt(prompt string) int {
-	fmt.Print(prompt)
-	var n int
-	fmt.Scan(&n)
-	return n
+func tambahKeahlian(user *User) {
+	if user.JumlahKeahlian >= MAX_PROFIL {
+		fmt.Println("  [!] Daftar keahlian sudah penuh.")
+		return
+	}
+
+	// Tampilkan daftar pilihan keahlian
+	fmt.Println()
+	fmt.Println("  Pilihan keahlian yang tersedia:")
+	cetakGaris()
+	for i := 0; i < jumlahPilihanKeahlian; i++ {
+		fmt.Printf("  %2d. %s\n", i+1, pilihanKeahlian[i])
+	}
+	cetakGaris()
+
+	nomor := inputInt("  Pilih nomor keahlian: ")
+	if nomor < 1 || nomor > jumlahPilihanKeahlian {
+		fmt.Println("  [!] Nomor tidak valid.")
+		return
+	}
+	keahlian := pilihanKeahlian[nomor-1]
+
+	// Cek apakah keahlian sudah ada di profil
+	for i := 0; i < user.JumlahKeahlian; i++ {
+		if user.Keahlian[i] == keahlian {
+			fmt.Println("  [!] Keahlian '" + keahlian + "' sudah ada di profil.")
+			return
+		}
+	}
+
+	user.Keahlian[user.JumlahKeahlian] = keahlian
+	user.JumlahKeahlian++
+	fmt.Println("  [v] Keahlian '" + keahlian + "' berhasil ditambahkan.")
 }
 
-// ============================================================
-// MENU MANAJEMEN DATA
-// ============================================================
+func hapusKeahlian(user *User) {
+	if user.JumlahKeahlian == 0 {
+		fmt.Println("  [!] Belum ada keahlian di profil.")
+		return
+	}
 
-func menuManajemenData(user *User) {
+	fmt.Println()
+	fmt.Println("  Keahlian Anda saat ini:")
+	cetakGaris()
+	for i := 0; i < user.JumlahKeahlian; i++ {
+		fmt.Printf("  %2d. %s\n", i+1, user.Keahlian[i])
+	}
+	cetakGaris()
+
+	nomor := inputInt("  Pilih nomor keahlian yang dihapus: ")
+	if nomor < 1 || nomor > user.JumlahKeahlian {
+		fmt.Println("  [!] Nomor tidak valid.")
+		return
+	}
+
+	hapus := user.Keahlian[nomor-1]
+	for i := nomor - 1; i < user.JumlahKeahlian-1; i++ {
+		user.Keahlian[i] = user.Keahlian[i+1]
+	}
+	user.Keahlian[user.JumlahKeahlian-1] = ""
+	user.JumlahKeahlian--
+	fmt.Println("  [v] Keahlian '" + hapus + "' berhasil dihapus.")
+}
+
+func menuKelolaProfil(user *User) {
 	for {
 		cetakHeader("KELOLA MINAT & KEAHLIAN")
 		fmt.Println("  1. Lihat profil")
@@ -664,32 +422,17 @@ func menuManajemenData(user *User) {
 		fmt.Println("  0. Kembali")
 		cetakGaris()
 		pilihan := inputInt("  Pilihan: ")
-
 		switch pilihan {
 		case 1:
 			tampilProfil(user)
 		case 2:
-			// Tampilkan daftar valid, lalu validasi input — ulangi sampai benar atau 'batal'
-			if minat, ok := inputMinatValid("  Pilih minat: "); ok {
-				tambahMinat(user, minat)
-			}
+			tambahMinat(user)
 		case 3:
-			tampilProfil(user)
-			if len(user.Minat) > 0 {
-				minat := inputStr("  Minat yang dihapus: ")
-				hapusMinat(user, minat)
-			}
+			hapusMinat(user)
 		case 4:
-			// Tampilkan daftar valid, lalu validasi input — ulangi sampai benar atau 'batal'
-			if nama, ok := inputKeahlianValid("  Pilih keahlian: "); ok {
-				tambahKeahlian(user, nama)
-			}
+			tambahKeahlian(user)
 		case 5:
-			tampilProfil(user)
-			if len(user.Keahlian) > 0 {
-				nama := inputStr("  Keahlian yang dihapus: ")
-				hapusKeahlian(user, nama)
-			}
+			hapusKeahlian(user)
 		case 0:
 			return
 		default:
@@ -699,8 +442,186 @@ func menuManajemenData(user *User) {
 }
 
 // ============================================================
-// MENU PENCARIAN
+// MODUL 2: REKOMENDASI & STATISTIK (Spesifikasi b & e)
 // ============================================================
+
+// hitungSkor menghitung persentase kecocokan user dengan satu karier.
+// Bobot: minat 40% + keahlian 60%
+func hitungSkor(user *User, k *Karier) float64 {
+	if k.JmlReqMinat == 0 && k.JmlReqKeahlian == 0 {
+		return 0
+	}
+
+	totalPoin := 0.0
+	maksPoin := 0.0
+
+	// Komponen minat (bobot 40%)
+	bobotMinat := 40.0 / float64(k.JmlReqMinat)
+	for i := 0; i < k.JmlReqMinat; i++ {
+		maksPoin += bobotMinat
+		for j := 0; j < user.JumlahMinat; j++ {
+			if user.Minat[j] == k.ReqMinat[i] {
+				totalPoin += bobotMinat
+				break
+			}
+		}
+	}
+
+	// Komponen keahlian (bobot 60%)
+	bobotKeahlian := 60.0 / float64(k.JmlReqKeahlian)
+	for i := 0; i < k.JmlReqKeahlian; i++ {
+		maksPoin += bobotKeahlian
+		for j := 0; j < user.JumlahKeahlian; j++ {
+			if user.Keahlian[j] == k.ReqKeahlian[i] {
+				totalPoin += bobotKeahlian
+				break
+			}
+		}
+	}
+
+	if maksPoin == 0 {
+		return 0
+	}
+	skor := (totalPoin / maksPoin) * 100
+	k.SkorCocok = skor
+	return skor
+}
+
+func hitungSemuaSkor(user *User) {
+	for i := 0; i < jumlahKarier; i++ {
+		hitungSkor(user, &daftarKarier[i])
+	}
+}
+
+func tampilRekomendasi(daftar [MAX_KARIER]Karier, jumlah int) {
+	if jumlah == 0 {
+		fmt.Println("  [!] Tidak ada rekomendasi.")
+		return
+	}
+	fmt.Println()
+	fmt.Println("  No   Nama Karier         Industri      Gaji(jt)  Kecocokan")
+	cetakGaris()
+	for i := 0; i < jumlah; i++ {
+		bar := buatBar(daftar[i].SkorCocok, 8)
+		fmt.Printf("  %-4d %-19s %-13s %-9d %s %.1f%%\n",
+			i+1, daftar[i].Nama, daftar[i].Industri,
+			daftar[i].GajiRata, bar, daftar[i].SkorCocok)
+	}
+}
+
+func tampilStatistik(user *User) {
+	hitungSemuaSkor(user)
+
+	total := 0.0
+	maks := 0.0
+	namaMaks := ""
+
+	for i := 0; i < jumlahKarier; i++ {
+		total += daftarKarier[i].SkorCocok
+		if daftarKarier[i].SkorCocok > maks {
+			maks = daftarKarier[i].SkorCocok
+			namaMaks = daftarKarier[i].Nama
+		}
+	}
+
+	rataRata := total / float64(jumlahKarier)
+
+	fmt.Println()
+	fmt.Println("  +==========================================+")
+	fmt.Println("  |      STATISTIK KECOCOKAN KARIER          |")
+	fmt.Println("  +==========================================+")
+	for i := 0; i < jumlahKarier; i++ {
+		bar := buatBar(daftarKarier[i].SkorCocok, 12)
+		fmt.Printf("  |  %-18s %s %.1f%%\n",
+			daftarKarier[i].Nama, bar, daftarKarier[i].SkorCocok)
+	}
+	fmt.Println("  +==========================================+")
+	fmt.Printf("  |  Rata-rata kecocokan  : %.1f%%\n", rataRata)
+	fmt.Printf("  |  Karier terbaik       : %s (%.1f%%)\n", namaMaks, maks)
+	fmt.Printf("  |  Total karier dianalisis: %d\n", jumlahKarier)
+	fmt.Println("  +==========================================+")
+}
+
+// ============================================================
+// MODUL 3: PENCARIAN (Spesifikasi c)
+// ============================================================
+
+// sequentialSearch mencari karier berdasarkan nama atau industri.
+// Memeriksa satu per satu dari awal sampai akhir (tidak perlu terurut).
+func sequentialSearch(query string) {
+	fmt.Println()
+	fmt.Printf("  Hasil pencarian untuk '%s':\n", query)
+	cetakGaris()
+
+	ditemukan := false
+	for i := 0; i < jumlahKarier; i++ {
+		// Cek apakah query ada di nama karier atau nama industri
+		if ada(daftarKarier[i].Nama, query) || ada(daftarKarier[i].Industri, query) {
+			fmt.Printf("  - %-20s | Industri: %-12s | Gaji: %d jt\n",
+				daftarKarier[i].Nama, daftarKarier[i].Industri, daftarKarier[i].GajiRata)
+			ditemukan = true
+		}
+	}
+	if !ditemukan {
+		fmt.Println("  Tidak ada karier yang cocok.")
+	}
+}
+
+// urutAlfabet mengurutkan salinan daftarKarier berdasarkan nama A-Z
+// menggunakan Insertion Sort (untuk keperluan Binary Search).
+func urutAlfabet() [MAX_KARIER]Karier {
+	var salinan [MAX_KARIER]Karier
+	for i := 0; i < jumlahKarier; i++ {
+		salinan[i] = daftarKarier[i]
+	}
+	// Insertion Sort berdasarkan nama
+	for i := 1; i < jumlahKarier; i++ {
+		kunci := salinan[i]
+		j := i - 1
+		for j >= 0 && salinan[j].Nama > kunci.Nama {
+			salinan[j+1] = salinan[j]
+			j--
+		}
+		salinan[j+1] = kunci
+	}
+	return salinan
+}
+
+// binarySearch mencari karier berdasarkan nama tepat (exact match).
+// Data harus sudah terurut A-Z terlebih dahulu.
+// Cara kerja: bagi dua ruang pencarian di setiap langkah.
+func binarySearch(terurut [MAX_KARIER]Karier, target string) {
+	kiri := 0
+	kanan := jumlahKarier - 1
+	hasil := -1
+
+	for kiri <= kanan {
+		tengah := (kiri + kanan) / 2
+		if terurut[tengah].Nama == target {
+			hasil = tengah
+			break
+		} else if terurut[tengah].Nama < target {
+			kiri = tengah + 1 // target ada di sisi kanan
+		} else {
+			kanan = tengah - 1 // target ada di sisi kiri
+		}
+	}
+
+	fmt.Println()
+	if hasil != -1 {
+		k := terurut[hasil]
+		fmt.Println("  [v] Karier ditemukan!")
+		fmt.Println("  Nama      : " + k.Nama)
+		fmt.Println("  Industri  : " + k.Industri)
+		fmt.Printf("  Gaji rata : %d juta/bulan\n", k.GajiRata)
+		fmt.Println("  Syarat keahlian:")
+		for i := 0; i < k.JmlReqKeahlian; i++ {
+			fmt.Println("    - " + k.ReqKeahlian[i])
+		}
+	} else {
+		fmt.Println("  [!] Karier '" + target + "' tidak ditemukan.")
+	}
+}
 
 func menuPencarian() {
 	for {
@@ -710,37 +631,27 @@ func menuPencarian() {
 		fmt.Println("  0. Kembali")
 		cetakGaris()
 		pilihan := inputInt("  Pilihan: ")
-
 		switch pilihan {
 		case 1:
-			query := inputStr("  Masukkan kata kunci: ")
-			hasil := sequentialSearch(daftarKarier, query)
-			fmt.Printf("\n  Ditemukan %d hasil untuk '%s':\n", len(hasil), query)
-			tampilRekomendasi(hasil)
-
+			fmt.Print("  Kata kunci: ")
+			var query string
+			fmt.Scan(&query)
+			sequentialSearch(query)
 		case 2:
-			terurut := urutAlfabet(daftarKarier)
-			fmt.Println("\n  Daftar karier (A–Z):")
-			for i, k := range terurut {
-				fmt.Printf("  %2d. %s\n", i+1, k.Nama)
+			// Urutkan dulu, tampilkan daftar, BARU minta input
+			terurut := urutAlfabet()
+			fmt.Println()
+			fmt.Println("  Daftar karier (A-Z):")
+			cetakGaris()
+			for i := 0; i < jumlahKarier; i++ {
+				fmt.Printf("  %2d. %s\n", i+1, terurut[i].Nama)
 			}
-			target := inputStr("\n  Masukkan nama karier (tepat): ")
-			idx := binarySearch(terurut, target)
-			if idx == -1 {
-				fmt.Println("  [!] Karier '" + target + "' tidak ditemukan.")
-			} else {
-				k := terurut[idx]
-				fmt.Println()
-				fmt.Println("  [✓] Karier ditemukan!")
-				fmt.Printf("  Nama      : %s\n", k.Nama)
-				fmt.Printf("  Industri  : %s\n", k.Industri)
-				fmt.Printf("  Gaji rata : %d juta/bulan\n", k.GajiRata)
-				fmt.Println("  Syarat keahlian:")
-				for _, rk := range k.ReqKeahlian {
-					fmt.Printf("    - %s\n", rk.Nama)
-				}
-			}
-
+			cetakGaris()
+			fmt.Println("  Contoh nama tepat: Data_Scientist, Akuntan, Jurnalis")
+			fmt.Print("  Masukkan nama karier: ")
+			var target string
+			fmt.Scan(&target)
+			binarySearch(terurut, target)
 		case 0:
 			return
 		default:
@@ -750,42 +661,73 @@ func menuPencarian() {
 }
 
 // ============================================================
-// MENU PENGURUTAN
+// MODUL 4: PENGURUTAN (Spesifikasi d)
 // ============================================================
+
+// selectionSortGaji mengurutkan karier berdasarkan gaji tertinggi ke terendah.
+// Cara kerja: cari nilai maksimum di sisa array, tukar ke posisi saat ini.
+func selectionSortGaji(daftar [MAX_KARIER]Karier, n int) [MAX_KARIER]Karier {
+	for i := 0; i < n-1; i++ {
+		idxMaks := i
+		for j := i + 1; j < n; j++ {
+			if daftar[j].GajiRata > daftar[idxMaks].GajiRata {
+				idxMaks = j
+			}
+		}
+		// Tukar posisi i dengan posisi maksimum
+		daftar[i], daftar[idxMaks] = daftar[idxMaks], daftar[i]
+	}
+	return daftar
+}
+
+// insertionSortSkor mengurutkan karier berdasarkan skor kecocokan tertinggi ke terendah.
+// Cara kerja: ambil satu elemen, sisipkan ke posisi yang benar di bagian kiri yang sudah terurut.
+func insertionSortSkor(daftar [MAX_KARIER]Karier, n int) [MAX_KARIER]Karier {
+	for i := 1; i < n; i++ {
+		kunci := daftar[i]
+		j := i - 1
+		// Geser elemen yang lebih kecil dari kunci ke kanan
+		for j >= 0 && daftar[j].SkorCocok < kunci.SkorCocok {
+			daftar[j+1] = daftar[j]
+			j--
+		}
+		// Sisipkan kunci ke posisi yang tepat
+		daftar[j+1] = kunci
+	}
+	return daftar
+}
 
 func menuPengurutan(user *User) {
 	for {
 		cetakHeader("URUTKAN REKOMENDASI")
-		fmt.Println("  1. Selection Sort — berdasarkan gaji (tertinggi)")
-		fmt.Println("  2. Insertion Sort — berdasarkan kecocokan (tertinggi)")
+		fmt.Println("  1. Selection Sort  - berdasarkan gaji (tertinggi)")
+		fmt.Println("  2. Insertion Sort  - berdasarkan kecocokan (tertinggi)")
 		fmt.Println("  0. Kembali")
 		cetakGaris()
 		pilihan := inputInt("  Pilihan: ")
-
 		switch pilihan {
 		case 1:
-			hasil := hitungSemuaRekomendasi(user, daftarKarier)
-			terurut := selectionSortGaji(hasil)
-			fmt.Println("\n  Karier diurutkan berdasarkan gaji (Selection Sort):")
-			fmt.Println("\n  No  Nama Karier           Industri       Gaji(jt)  Kecocokan")
-			fmt.Println("  ─────────────────────────────────────────────────────────────")
-			for i, k := range terurut {
-				bar := buatBar(k.SkorCocok, 10)
-				fmt.Printf("  %-3d %-22s %-15s %-9d %s %.1f%%\n",
-					i+1, k.Nama, k.Industri, k.GajiRata, bar, k.SkorCocok)
+			hitungSemuaSkor(user)
+			// Salin daftarKarier ke array lokal untuk diurutkan
+			var temp [MAX_KARIER]Karier
+			for i := 0; i < jumlahKarier; i++ {
+				temp[i] = daftarKarier[i]
 			}
+			terurut := selectionSortGaji(temp, jumlahKarier)
+			fmt.Println()
+			fmt.Println("  Diurutkan berdasarkan gaji (Selection Sort):")
+			tampilRekomendasi(terurut, jumlahKarier)
 
 		case 2:
-			hasil := hitungSemuaRekomendasi(user, daftarKarier)
-			terurut := insertionSortSkor(hasil)
-			fmt.Println("\n  Karier diurutkan berdasarkan kecocokan (Insertion Sort):")
-			fmt.Println("\n  No  Nama Karier           Industri       Gaji(jt)  Kecocokan")
-			fmt.Println("  ─────────────────────────────────────────────────────────────")
-			for i, k := range terurut {
-				bar := buatBar(k.SkorCocok, 10)
-				fmt.Printf("  %-3d %-22s %-15s %-9d %s %.1f%%\n",
-					i+1, k.Nama, k.Industri, k.GajiRata, bar, k.SkorCocok)
+			hitungSemuaSkor(user)
+			var temp [MAX_KARIER]Karier
+			for i := 0; i < jumlahKarier; i++ {
+				temp[i] = daftarKarier[i]
 			}
+			terurut := insertionSortSkor(temp, jumlahKarier)
+			fmt.Println()
+			fmt.Println("  Diurutkan berdasarkan kecocokan (Insertion Sort):")
+			tampilRekomendasi(terurut, jumlahKarier)
 
 		case 0:
 			return
@@ -800,28 +742,23 @@ func menuPengurutan(user *User) {
 // ============================================================
 
 func main() {
-	daftarKarier = dataKarierAwal()
+	initData()
 
-	// Setup pengguna awal
-	fmt.Println("  ╔══════════════════════════════════════════╗")
-	fmt.Println("  ║   APLIKASI REKOMENDASI KARIER            ║")
-	fmt.Println("  ║   Algoritma Pemrograman                  ║")
-	fmt.Println("  ╚══════════════════════════════════════════╝")
+	fmt.Println()
+	fmt.Println("  +==========================================+")
+	fmt.Println("  |    APLIKASI REKOMENDASI KARIER           |")
+	fmt.Println("  |    Algoritma Pemrograman                 |")
+	fmt.Println("  +==========================================+")
 	fmt.Println()
 	fmt.Print("  Masukkan nama Anda: ")
 	var namaPengguna string
 	fmt.Scan(&namaPengguna)
 
-	user := &User{
-		ID:       "U001",
-		Nama:     namaPengguna,
-		Minat:    []string{},
-		Keahlian: []Keahlian{},
-	}
+	user := User{Nama: namaPengguna}
 
 	fmt.Println()
 	fmt.Println("  Selamat datang, " + user.Nama + "!")
-	fmt.Println("  Silakan lengkapi profil Anda di menu 'Kelola Data'.")
+	fmt.Println("  Silakan lengkapi profil Anda di menu 1.")
 
 	for {
 		cetakHeader("MENU UTAMA")
@@ -836,28 +773,28 @@ func main() {
 
 		switch pilihan {
 		case 1:
-			menuManajemenData(user)
+			menuKelolaProfil(&user)
 
 		case 2:
 			cetakHeader("REKOMENDASI KARIER")
-			hasil := hitungSemuaRekomendasi(user, daftarKarier)
-			if len(hasil) == 0 {
-				fmt.Println("  [!] Lengkapi minat dan keahlian dulu di menu 1.")
-			} else {
-				// Default: tampilkan urut skor tertinggi
-				terurut := insertionSortSkor(hasil)
-				tampilRekomendasi(terurut)
+			hitungSemuaSkor(&user)
+			var temp [MAX_KARIER]Karier
+			for i := 0; i < jumlahKarier; i++ {
+				temp[i] = daftarKarier[i]
 			}
+			// Tampilkan urut skor tertinggi secara default
+			terurut := insertionSortSkor(temp, jumlahKarier)
+			tampilRekomendasi(terurut, jumlahKarier)
 
 		case 3:
 			menuPencarian()
 
 		case 4:
-			menuPengurutan(user)
+			menuPengurutan(&user)
 
 		case 5:
 			cetakHeader("STATISTIK KECOCOKAN")
-			tampilStatistik(user, daftarKarier)
+			tampilStatistik(&user)
 
 		case 0:
 			fmt.Println()
