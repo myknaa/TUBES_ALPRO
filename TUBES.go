@@ -6,13 +6,11 @@ import "fmt"
 // KONSTANTA & TIPE DATA
 // ============================================================
 
-const (
-	MAX_KARIER           = 8  // jumlah karier dalam database
-	MAX_SYARAT           = 5  // maks syarat minat/keahlian per karier
-	MAX_PROFIL           = 15 // maks minat/keahlian yang bisa dimiliki user
-	MAX_PILIHAN_MINAT    = 12 // total pilihan minat yang tersedia
-	MAX_PILIHAN_KEAHLIAN = 20 // total pilihan keahlian yang tersedia
-)
+const MAX_KARIER int = 8
+const MAX_SYARAT int = 5
+const MAX_PROFIL int = 15
+const MAX_PILIHAN_MINAT int = 10
+const MAX_PILIHAN_KEAHLIAN int = 18
 
 type Karier struct {
 	ID             string
@@ -41,7 +39,6 @@ type User struct {
 var daftarKarier [MAX_KARIER]Karier
 var jumlahKarier int
 
-// Daftar pilihan minat dan keahlian yang bisa dipilih user
 var pilihanMinat [MAX_PILIHAN_MINAT]string
 var jumlahPilihanMinat int
 var pilihanKeahlian [MAX_PILIHAN_KEAHLIAN]string
@@ -52,8 +49,6 @@ var jumlahPilihanKeahlian int
 // ============================================================
 
 func initData() {
-	// --- Data Karier ---
-
 	daftarKarier[0].ID = "K001"
 	daftarKarier[0].Nama = "Data_Scientist"
 	daftarKarier[0].Industri = "Teknologi"
@@ -146,7 +141,6 @@ func initData() {
 
 	jumlahKarier = 8
 
-	// --- Pilihan Minat (dikumpulkan manual dari data di atas) ---
 	pilihanMinat[0] = "Teknologi"
 	pilihanMinat[1] = "Matematika"
 	pilihanMinat[2] = "Desain"
@@ -159,7 +153,6 @@ func initData() {
 	pilihanMinat[9] = "Komunikasi"
 	jumlahPilihanMinat = 10
 
-	// --- Pilihan Keahlian ---
 	pilihanKeahlian[0] = "Python"
 	pilihanKeahlian[1] = "Statistik"
 	pilihanKeahlian[2] = "Machine_Learning"
@@ -185,20 +178,53 @@ func initData() {
 // HELPER: INPUT & TAMPILAN
 // ============================================================
 
-// inputInt membaca angka dari user. Kalau input bukan angka,
-// minta ulang terus sampai benar.
+// inputInt membaca integer dari user.
+// Jika bukan angka, minta ulang sampai benar.
+// Implementasi: baca per karakter, cek apakah semua digit 0-9.
 func inputInt(prompt string) int {
 	var s string
 	var n int
-	for {
+	var ok bool
+	var i int
+	var panjang int
+
+	ok = false
+	for !ok {
 		fmt.Print(prompt)
 		fmt.Scan(&s)
-		jumlah, _ := fmt.Sscan(s, &n)
-		if jumlah == 1 {
-			return n
+
+		// Cek apakah s adalah angka valid (boleh negatif)
+		panjang = len(s)
+		ok = true
+		n = 0
+		i = 0
+
+		// Tangani tanda minus di depan
+		if panjang > 0 && s[0] == '-' {
+			i = 1
 		}
-		fmt.Println("  [!] Masukkan angka yang valid.")
+		// Minimal harus ada 1 digit setelah tanda minus
+		if i >= panjang {
+			ok = false
+		}
+		// Periksa satu per satu apakah semua karakter adalah digit
+		for i < panjang && ok {
+			if s[i] >= '0' && s[i] <= '9' {
+				n = n*10 + int(s[i]-'0')
+				i++
+			} else {
+				ok = false
+			}
+		}
+		// Terapkan tanda negatif jika ada
+		if ok && panjang > 0 && s[0] == '-' {
+			n = -n
+		}
+		if !ok {
+			fmt.Println("  [!] Masukkan angka yang valid.")
+		}
 	}
+	return n
 }
 
 func cetakHeader(judul string) {
@@ -212,38 +238,50 @@ func cetakGaris() {
 	fmt.Println("  ------------------------------------------")
 }
 
-// buatBar membuat visualisasi bar █ berdasarkan persentase
+// buatBar membuat visualisasi bar berdasarkan persentase (0-100)
 func buatBar(persen float64, panjang int) string {
-	isi := int(persen / 100.0 * float64(panjang))
-	bar := "["
-	for i := 0; i < panjang; i++ {
+	var isi int
+	var bar string
+	var i int
+
+	isi = int(persen / 100.0 * float64(panjang))
+	bar = "["
+	for i = 0; i < panjang; i++ {
 		if i < isi {
-			bar += "█"
+			bar = bar + "="
 		} else {
-			bar += "░"
+			bar = bar + "."
 		}
 	}
-	bar += "]"
+	bar = bar + "]"
 	return bar
 }
 
-// ada memeriksa apakah 'kata' ada di dalam 'kalimat'
-// menggunakan perbandingan karakter satu per satu (case-sensitive)
-func ada(kalimat, kata string) bool {
-	pKalimat := len(kalimat)
-	pKata := len(kata)
+// ada memeriksa apakah 'kata' ada di dalam 'kalimat' (case-sensitive)
+// menggunakan perbandingan karakter satu per satu, tanpa library tambahan
+func ada(kalimat string, kata string) bool {
+	var pKalimat int
+	var pKata int
+	var i int
+	var j int
+	var cocok bool
+
+	pKalimat = len(kalimat)
+	pKata = len(kata)
+
 	if pKata == 0 {
 		return true
 	}
 	if pKata > pKalimat {
 		return false
 	}
-	for i := 0; i <= pKalimat-pKata; i++ {
-		cocok := true
-		for j := 0; j < pKata; j++ {
+
+	// Cek setiap posisi kemungkinan awal kata di dalam kalimat
+	for i = 0; i <= pKalimat-pKata; i++ {
+		cocok = true
+		for j = 0; j < pKata && cocok; j++ {
 			if kalimat[i+j] != kata[j] {
 				cocok = false
-				break
 			}
 		}
 		if cocok {
@@ -258,6 +296,7 @@ func ada(kalimat, kata string) bool {
 // ============================================================
 
 func tampilProfil(user *User) {
+	var i int
 	fmt.Println()
 	fmt.Println("  +-------------------------------------+")
 	fmt.Printf("  |  Nama     : %-23s|\n", user.Nama)
@@ -265,7 +304,7 @@ func tampilProfil(user *User) {
 	if user.JumlahMinat == 0 {
 		fmt.Println("  |    (belum ada)                       |")
 	} else {
-		for i := 0; i < user.JumlahMinat; i++ {
+		for i = 0; i < user.JumlahMinat; i++ {
 			fmt.Printf("  |    %d. %-31s|\n", i+1, user.Minat[i])
 		}
 	}
@@ -273,7 +312,7 @@ func tampilProfil(user *User) {
 	if user.JumlahKeahlian == 0 {
 		fmt.Println("  |    (belum ada)                       |")
 	} else {
-		for i := 0; i < user.JumlahKeahlian; i++ {
+		for i = 0; i < user.JumlahKeahlian; i++ {
 			fmt.Printf("  |    %d. %-31s|\n", i+1, user.Keahlian[i])
 		}
 	}
@@ -281,34 +320,41 @@ func tampilProfil(user *User) {
 }
 
 func tambahMinat(user *User) {
+	var i int
+	var nomor int
+	var minat string
+	var sudahAda bool
+
 	if user.JumlahMinat >= MAX_PROFIL {
 		fmt.Println("  [!] Daftar minat sudah penuh.")
 		return
 	}
 
-	// Tampilkan daftar pilihan minat yang tersedia
 	fmt.Println()
 	fmt.Println("  Pilihan minat yang tersedia:")
 	cetakGaris()
-	for i := 0; i < jumlahPilihanMinat; i++ {
+	for i = 0; i < jumlahPilihanMinat; i++ {
 		fmt.Printf("  %2d. %s\n", i+1, pilihanMinat[i])
 	}
 	cetakGaris()
 
-	// User pilih nomor -> tidak bisa typo
-	nomor := inputInt("  Pilih nomor minat: ")
+	nomor = inputInt("  Pilih nomor minat: ")
 	if nomor < 1 || nomor > jumlahPilihanMinat {
 		fmt.Println("  [!] Nomor tidak valid.")
 		return
 	}
-	minat := pilihanMinat[nomor-1]
+	minat = pilihanMinat[nomor-1]
 
 	// Cek apakah minat sudah ada di profil
-	for i := 0; i < user.JumlahMinat; i++ {
+	sudahAda = false
+	for i = 0; i < user.JumlahMinat; i++ {
 		if user.Minat[i] == minat {
-			fmt.Println("  [!] Minat '" + minat + "' sudah ada di profil.")
-			return
+			sudahAda = true
 		}
+	}
+	if sudahAda {
+		fmt.Println("  [!] Minat '" + minat + "' sudah ada di profil.")
+		return
 	}
 
 	user.Minat[user.JumlahMinat] = minat
@@ -317,29 +363,32 @@ func tambahMinat(user *User) {
 }
 
 func hapusMinat(user *User) {
+	var i int
+	var nomor int
+	var hapus string
+
 	if user.JumlahMinat == 0 {
 		fmt.Println("  [!] Belum ada minat di profil.")
 		return
 	}
 
-	// Tampilkan minat user saat ini
 	fmt.Println()
 	fmt.Println("  Minat Anda saat ini:")
 	cetakGaris()
-	for i := 0; i < user.JumlahMinat; i++ {
+	for i = 0; i < user.JumlahMinat; i++ {
 		fmt.Printf("  %2d. %s\n", i+1, user.Minat[i])
 	}
 	cetakGaris()
 
-	nomor := inputInt("  Pilih nomor minat yang dihapus: ")
+	nomor = inputInt("  Pilih nomor minat yang dihapus: ")
 	if nomor < 1 || nomor > user.JumlahMinat {
 		fmt.Println("  [!] Nomor tidak valid.")
 		return
 	}
 
-	hapus := user.Minat[nomor-1]
-	// Geser semua elemen di belakangnya ke kiri
-	for i := nomor - 1; i < user.JumlahMinat-1; i++ {
+	hapus = user.Minat[nomor-1]
+	// Geser semua elemen di belakangnya ke kiri untuk menutup celah
+	for i = nomor - 1; i < user.JumlahMinat-1; i++ {
 		user.Minat[i] = user.Minat[i+1]
 	}
 	user.Minat[user.JumlahMinat-1] = ""
@@ -348,33 +397,40 @@ func hapusMinat(user *User) {
 }
 
 func tambahKeahlian(user *User) {
+	var i int
+	var nomor int
+	var keahlian string
+	var sudahAda bool
+
 	if user.JumlahKeahlian >= MAX_PROFIL {
 		fmt.Println("  [!] Daftar keahlian sudah penuh.")
 		return
 	}
 
-	// Tampilkan daftar pilihan keahlian
 	fmt.Println()
 	fmt.Println("  Pilihan keahlian yang tersedia:")
 	cetakGaris()
-	for i := 0; i < jumlahPilihanKeahlian; i++ {
+	for i = 0; i < jumlahPilihanKeahlian; i++ {
 		fmt.Printf("  %2d. %s\n", i+1, pilihanKeahlian[i])
 	}
 	cetakGaris()
 
-	nomor := inputInt("  Pilih nomor keahlian: ")
+	nomor = inputInt("  Pilih nomor keahlian: ")
 	if nomor < 1 || nomor > jumlahPilihanKeahlian {
 		fmt.Println("  [!] Nomor tidak valid.")
 		return
 	}
-	keahlian := pilihanKeahlian[nomor-1]
+	keahlian = pilihanKeahlian[nomor-1]
 
-	// Cek apakah keahlian sudah ada di profil
-	for i := 0; i < user.JumlahKeahlian; i++ {
+	sudahAda = false
+	for i = 0; i < user.JumlahKeahlian; i++ {
 		if user.Keahlian[i] == keahlian {
-			fmt.Println("  [!] Keahlian '" + keahlian + "' sudah ada di profil.")
-			return
+			sudahAda = true
 		}
+	}
+	if sudahAda {
+		fmt.Println("  [!] Keahlian '" + keahlian + "' sudah ada di profil.")
+		return
 	}
 
 	user.Keahlian[user.JumlahKeahlian] = keahlian
@@ -383,6 +439,10 @@ func tambahKeahlian(user *User) {
 }
 
 func hapusKeahlian(user *User) {
+	var i int
+	var nomor int
+	var hapus string
+
 	if user.JumlahKeahlian == 0 {
 		fmt.Println("  [!] Belum ada keahlian di profil.")
 		return
@@ -391,19 +451,19 @@ func hapusKeahlian(user *User) {
 	fmt.Println()
 	fmt.Println("  Keahlian Anda saat ini:")
 	cetakGaris()
-	for i := 0; i < user.JumlahKeahlian; i++ {
+	for i = 0; i < user.JumlahKeahlian; i++ {
 		fmt.Printf("  %2d. %s\n", i+1, user.Keahlian[i])
 	}
 	cetakGaris()
 
-	nomor := inputInt("  Pilih nomor keahlian yang dihapus: ")
+	nomor = inputInt("  Pilih nomor keahlian yang dihapus: ")
 	if nomor < 1 || nomor > user.JumlahKeahlian {
 		fmt.Println("  [!] Nomor tidak valid.")
 		return
 	}
 
-	hapus := user.Keahlian[nomor-1]
-	for i := nomor - 1; i < user.JumlahKeahlian-1; i++ {
+	hapus = user.Keahlian[nomor-1]
+	for i = nomor - 1; i < user.JumlahKeahlian-1; i++ {
 		user.Keahlian[i] = user.Keahlian[i+1]
 	}
 	user.Keahlian[user.JumlahKeahlian-1] = ""
@@ -412,6 +472,7 @@ func hapusKeahlian(user *User) {
 }
 
 func menuKelolaProfil(user *User) {
+	var pilihan int
 	for {
 		cetakHeader("KELOLA MINAT & KEAHLIAN")
 		fmt.Println("  1. Lihat profil")
@@ -421,7 +482,7 @@ func menuKelolaProfil(user *User) {
 		fmt.Println("  5. Hapus keahlian")
 		fmt.Println("  0. Kembali")
 		cetakGaris()
-		pilihan := inputInt("  Pilihan: ")
+		pilihan = inputInt("  Pilihan: ")
 		switch pilihan {
 		case 1:
 			tampilProfil(user)
@@ -448,33 +509,38 @@ func menuKelolaProfil(user *User) {
 // hitungSkor menghitung persentase kecocokan user dengan satu karier.
 // Bobot: minat 40% + keahlian 60%
 func hitungSkor(user *User, k *Karier) float64 {
+	var i int
+	var j int
+	var totalPoin float64
+	var maksPoin float64
+	var bobotMinat float64
+	var bobotKeahlian float64
+
 	if k.JmlReqMinat == 0 && k.JmlReqKeahlian == 0 {
 		return 0
 	}
 
-	totalPoin := 0.0
-	maksPoin := 0.0
+	totalPoin = 0
+	maksPoin = 0
 
 	// Komponen minat (bobot 40%)
-	bobotMinat := 40.0 / float64(k.JmlReqMinat)
-	for i := 0; i < k.JmlReqMinat; i++ {
-		maksPoin += bobotMinat
-		for j := 0; j < user.JumlahMinat; j++ {
+	bobotMinat = 40.0 / float64(k.JmlReqMinat)
+	for i = 0; i < k.JmlReqMinat; i++ {
+		maksPoin = maksPoin + bobotMinat
+		for j = 0; j < user.JumlahMinat; j++ {
 			if user.Minat[j] == k.ReqMinat[i] {
-				totalPoin += bobotMinat
-				break
+				totalPoin = totalPoin + bobotMinat
 			}
 		}
 	}
 
 	// Komponen keahlian (bobot 60%)
-	bobotKeahlian := 60.0 / float64(k.JmlReqKeahlian)
-	for i := 0; i < k.JmlReqKeahlian; i++ {
-		maksPoin += bobotKeahlian
-		for j := 0; j < user.JumlahKeahlian; j++ {
+	bobotKeahlian = 60.0 / float64(k.JmlReqKeahlian)
+	for i = 0; i < k.JmlReqKeahlian; i++ {
+		maksPoin = maksPoin + bobotKeahlian
+		for j = 0; j < user.JumlahKeahlian; j++ {
 			if user.Keahlian[j] == k.ReqKeahlian[i] {
-				totalPoin += bobotKeahlian
-				break
+				totalPoin = totalPoin + bobotKeahlian
 			}
 		}
 	}
@@ -482,18 +548,21 @@ func hitungSkor(user *User, k *Karier) float64 {
 	if maksPoin == 0 {
 		return 0
 	}
-	skor := (totalPoin / maksPoin) * 100
-	k.SkorCocok = skor
-	return skor
+	k.SkorCocok = (totalPoin / maksPoin) * 100
+	return k.SkorCocok
 }
 
 func hitungSemuaSkor(user *User) {
-	for i := 0; i < jumlahKarier; i++ {
+	var i int
+	for i = 0; i < jumlahKarier; i++ {
 		hitungSkor(user, &daftarKarier[i])
 	}
 }
 
 func tampilRekomendasi(daftar [MAX_KARIER]Karier, jumlah int) {
+	var i int
+	var bar string
+
 	if jumlah == 0 {
 		fmt.Println("  [!] Tidak ada rekomendasi.")
 		return
@@ -501,8 +570,8 @@ func tampilRekomendasi(daftar [MAX_KARIER]Karier, jumlah int) {
 	fmt.Println()
 	fmt.Println("  No   Nama Karier         Industri      Gaji(jt)  Kecocokan")
 	cetakGaris()
-	for i := 0; i < jumlah; i++ {
-		bar := buatBar(daftar[i].SkorCocok, 8)
+	for i = 0; i < jumlah; i++ {
+		bar = buatBar(daftar[i].SkorCocok, 8)
 		fmt.Printf("  %-4d %-19s %-13s %-9d %s %.1f%%\n",
 			i+1, daftar[i].Nama, daftar[i].Industri,
 			daftar[i].GajiRata, bar, daftar[i].SkorCocok)
@@ -510,28 +579,35 @@ func tampilRekomendasi(daftar [MAX_KARIER]Karier, jumlah int) {
 }
 
 func tampilStatistik(user *User) {
+	var i int
+	var total float64
+	var maks float64
+	var namaMaks string
+	var rataRata float64
+	var bar string
+
 	hitungSemuaSkor(user)
 
-	total := 0.0
-	maks := 0.0
-	namaMaks := ""
+	total = 0
+	maks = 0
+	namaMaks = ""
 
-	for i := 0; i < jumlahKarier; i++ {
-		total += daftarKarier[i].SkorCocok
+	for i = 0; i < jumlahKarier; i++ {
+		total = total + daftarKarier[i].SkorCocok
 		if daftarKarier[i].SkorCocok > maks {
 			maks = daftarKarier[i].SkorCocok
 			namaMaks = daftarKarier[i].Nama
 		}
 	}
 
-	rataRata := total / float64(jumlahKarier)
+	rataRata = total / float64(jumlahKarier)
 
 	fmt.Println()
 	fmt.Println("  +==========================================+")
 	fmt.Println("  |      STATISTIK KECOCOKAN KARIER          |")
 	fmt.Println("  +==========================================+")
-	for i := 0; i < jumlahKarier; i++ {
-		bar := buatBar(daftarKarier[i].SkorCocok, 12)
+	for i = 0; i < jumlahKarier; i++ {
+		bar = buatBar(daftarKarier[i].SkorCocok, 12)
 		fmt.Printf("  |  %-18s %s %.1f%%\n",
 			daftarKarier[i].Nama, bar, daftarKarier[i].SkorCocok)
 	}
@@ -547,15 +623,17 @@ func tampilStatistik(user *User) {
 // ============================================================
 
 // sequentialSearch mencari karier berdasarkan nama atau industri.
-// Memeriksa satu per satu dari awal sampai akhir (tidak perlu terurut).
+// Memeriksa satu per satu dari indeks 0 sampai akhir (tidak perlu terurut).
 func sequentialSearch(query string) {
+	var i int
+	var ditemukan bool
+
 	fmt.Println()
 	fmt.Printf("  Hasil pencarian untuk '%s':\n", query)
 	cetakGaris()
 
-	ditemukan := false
-	for i := 0; i < jumlahKarier; i++ {
-		// Cek apakah query ada di nama karier atau nama industri
+	ditemukan = false
+	for i = 0; i < jumlahKarier; i++ {
 		if ada(daftarKarier[i].Nama, query) || ada(daftarKarier[i].Industri, query) {
 			fmt.Printf("  - %-20s | Industri: %-12s | Gaji: %d jt\n",
 				daftarKarier[i].Nama, daftarKarier[i].Industri, daftarKarier[i].GajiRata)
@@ -567,17 +645,21 @@ func sequentialSearch(query string) {
 	}
 }
 
-// urutAlfabet mengurutkan salinan daftarKarier berdasarkan nama A-Z
-// menggunakan Insertion Sort (untuk keperluan Binary Search).
+// urutAlfabet membuat salinan daftarKarier yang sudah diurutkan A-Z by nama.
+// Menggunakan Insertion Sort karena data harus terurut sebelum Binary Search.
 func urutAlfabet() [MAX_KARIER]Karier {
 	var salinan [MAX_KARIER]Karier
-	for i := 0; i < jumlahKarier; i++ {
+	var i int
+	var j int
+	var kunci Karier
+
+	for i = 0; i < jumlahKarier; i++ {
 		salinan[i] = daftarKarier[i]
 	}
-	// Insertion Sort berdasarkan nama
-	for i := 1; i < jumlahKarier; i++ {
-		kunci := salinan[i]
-		j := i - 1
+	// Insertion Sort berdasarkan nama (ascending A-Z)
+	for i = 1; i < jumlahKarier; i++ {
+		kunci = salinan[i]
+		j = i - 1
 		for j >= 0 && salinan[j].Nama > kunci.Nama {
 			salinan[j+1] = salinan[j]
 			j--
@@ -588,18 +670,24 @@ func urutAlfabet() [MAX_KARIER]Karier {
 }
 
 // binarySearch mencari karier berdasarkan nama tepat (exact match).
-// Data harus sudah terurut A-Z terlebih dahulu.
-// Cara kerja: bagi dua ruang pencarian di setiap langkah.
+// Prasyarat: data sudah terurut A-Z. Cara kerja: bagi dua ruang pencarian setiap langkah.
 func binarySearch(terurut [MAX_KARIER]Karier, target string) {
-	kiri := 0
-	kanan := jumlahKarier - 1
-	hasil := -1
+	var kiri int
+	var kanan int
+	var tengah int
+	var hasil int
+	var i int
+	var k Karier
+
+	kiri = 0
+	kanan = jumlahKarier - 1
+	hasil = -1
 
 	for kiri <= kanan {
-		tengah := (kiri + kanan) / 2
+		tengah = (kiri + kanan) / 2
 		if terurut[tengah].Nama == target {
 			hasil = tengah
-			break
+			kiri = kanan + 1 // paksa keluar dari loop
 		} else if terurut[tengah].Nama < target {
 			kiri = tengah + 1 // target ada di sisi kanan
 		} else {
@@ -609,13 +697,13 @@ func binarySearch(terurut [MAX_KARIER]Karier, target string) {
 
 	fmt.Println()
 	if hasil != -1 {
-		k := terurut[hasil]
+		k = terurut[hasil]
 		fmt.Println("  [v] Karier ditemukan!")
 		fmt.Println("  Nama      : " + k.Nama)
 		fmt.Println("  Industri  : " + k.Industri)
 		fmt.Printf("  Gaji rata : %d juta/bulan\n", k.GajiRata)
 		fmt.Println("  Syarat keahlian:")
-		for i := 0; i < k.JmlReqKeahlian; i++ {
+		for i = 0; i < k.JmlReqKeahlian; i++ {
 			fmt.Println("    - " + k.ReqKeahlian[i])
 		}
 	} else {
@@ -624,32 +712,36 @@ func binarySearch(terurut [MAX_KARIER]Karier, target string) {
 }
 
 func menuPencarian() {
+	var pilihan int
+	var query string
+	var target string
+	var terurut [MAX_KARIER]Karier
+	var i int
+
 	for {
 		cetakHeader("CARI KARIER")
 		fmt.Println("  1. Sequential Search (nama/industri)")
 		fmt.Println("  2. Binary Search (nama tepat)")
 		fmt.Println("  0. Kembali")
 		cetakGaris()
-		pilihan := inputInt("  Pilihan: ")
+		pilihan = inputInt("  Pilihan: ")
 		switch pilihan {
 		case 1:
 			fmt.Print("  Kata kunci: ")
-			var query string
 			fmt.Scan(&query)
 			sequentialSearch(query)
 		case 2:
 			// Urutkan dulu, tampilkan daftar, BARU minta input
-			terurut := urutAlfabet()
+			terurut = urutAlfabet()
 			fmt.Println()
 			fmt.Println("  Daftar karier (A-Z):")
 			cetakGaris()
-			for i := 0; i < jumlahKarier; i++ {
+			for i = 0; i < jumlahKarier; i++ {
 				fmt.Printf("  %2d. %s\n", i+1, terurut[i].Nama)
 			}
 			cetakGaris()
 			fmt.Println("  Contoh nama tepat: Data_Scientist, Akuntan, Jurnalis")
 			fmt.Print("  Masukkan nama karier: ")
-			var target string
 			fmt.Scan(&target)
 			binarySearch(terurut, target)
 		case 0:
@@ -667,9 +759,13 @@ func menuPencarian() {
 // selectionSortGaji mengurutkan karier berdasarkan gaji tertinggi ke terendah.
 // Cara kerja: cari nilai maksimum di sisa array, tukar ke posisi saat ini.
 func selectionSortGaji(daftar [MAX_KARIER]Karier, n int) [MAX_KARIER]Karier {
-	for i := 0; i < n-1; i++ {
-		idxMaks := i
-		for j := i + 1; j < n; j++ {
+	var i int
+	var j int
+	var idxMaks int
+
+	for i = 0; i < n-1; i++ {
+		idxMaks = i
+		for j = i + 1; j < n; j++ {
 			if daftar[j].GajiRata > daftar[idxMaks].GajiRata {
 				idxMaks = j
 			}
@@ -683,9 +779,13 @@ func selectionSortGaji(daftar [MAX_KARIER]Karier, n int) [MAX_KARIER]Karier {
 // insertionSortSkor mengurutkan karier berdasarkan skor kecocokan tertinggi ke terendah.
 // Cara kerja: ambil satu elemen, sisipkan ke posisi yang benar di bagian kiri yang sudah terurut.
 func insertionSortSkor(daftar [MAX_KARIER]Karier, n int) [MAX_KARIER]Karier {
-	for i := 1; i < n; i++ {
-		kunci := daftar[i]
-		j := i - 1
+	var i int
+	var j int
+	var kunci Karier
+
+	for i = 1; i < n; i++ {
+		kunci = daftar[i]
+		j = i - 1
 		// Geser elemen yang lebih kecil dari kunci ke kanan
 		for j >= 0 && daftar[j].SkorCocok < kunci.SkorCocok {
 			daftar[j+1] = daftar[j]
@@ -698,37 +798,37 @@ func insertionSortSkor(daftar [MAX_KARIER]Karier, n int) [MAX_KARIER]Karier {
 }
 
 func menuPengurutan(user *User) {
+	var pilihan int
+	var temp [MAX_KARIER]Karier
+	var terurut [MAX_KARIER]Karier
+	var i int
+
 	for {
 		cetakHeader("URUTKAN REKOMENDASI")
 		fmt.Println("  1. Selection Sort  - berdasarkan gaji (tertinggi)")
 		fmt.Println("  2. Insertion Sort  - berdasarkan kecocokan (tertinggi)")
 		fmt.Println("  0. Kembali")
 		cetakGaris()
-		pilihan := inputInt("  Pilihan: ")
+		pilihan = inputInt("  Pilihan: ")
 		switch pilihan {
 		case 1:
 			hitungSemuaSkor(user)
-			// Salin daftarKarier ke array lokal untuk diurutkan
-			var temp [MAX_KARIER]Karier
-			for i := 0; i < jumlahKarier; i++ {
+			for i = 0; i < jumlahKarier; i++ {
 				temp[i] = daftarKarier[i]
 			}
-			terurut := selectionSortGaji(temp, jumlahKarier)
+			terurut = selectionSortGaji(temp, jumlahKarier)
 			fmt.Println()
 			fmt.Println("  Diurutkan berdasarkan gaji (Selection Sort):")
 			tampilRekomendasi(terurut, jumlahKarier)
-
 		case 2:
 			hitungSemuaSkor(user)
-			var temp [MAX_KARIER]Karier
-			for i := 0; i < jumlahKarier; i++ {
+			for i = 0; i < jumlahKarier; i++ {
 				temp[i] = daftarKarier[i]
 			}
-			terurut := insertionSortSkor(temp, jumlahKarier)
+			terurut = insertionSortSkor(temp, jumlahKarier)
 			fmt.Println()
 			fmt.Println("  Diurutkan berdasarkan kecocokan (Insertion Sort):")
 			tampilRekomendasi(terurut, jumlahKarier)
-
 		case 0:
 			return
 		default:
@@ -742,6 +842,12 @@ func menuPengurutan(user *User) {
 // ============================================================
 
 func main() {
+	var user User
+	var pilihan int
+	var temp [MAX_KARIER]Karier
+	var terurut [MAX_KARIER]Karier
+	var i int
+
 	initData()
 
 	fmt.Println()
@@ -751,10 +857,7 @@ func main() {
 	fmt.Println("  +==========================================+")
 	fmt.Println()
 	fmt.Print("  Masukkan nama Anda: ")
-	var namaPengguna string
-	fmt.Scan(&namaPengguna)
-
-	user := User{Nama: namaPengguna}
+	fmt.Scan(&user.Nama)
 
 	fmt.Println()
 	fmt.Println("  Selamat datang, " + user.Nama + "!")
@@ -769,39 +872,31 @@ func main() {
 		fmt.Println("  5. Statistik Kecocokan")
 		fmt.Println("  0. Keluar")
 		cetakGaris()
-		pilihan := inputInt("  Pilihan: ")
+		pilihan = inputInt("  Pilihan: ")
 
 		switch pilihan {
 		case 1:
 			menuKelolaProfil(&user)
-
 		case 2:
 			cetakHeader("REKOMENDASI KARIER")
 			hitungSemuaSkor(&user)
-			var temp [MAX_KARIER]Karier
-			for i := 0; i < jumlahKarier; i++ {
+			for i = 0; i < jumlahKarier; i++ {
 				temp[i] = daftarKarier[i]
 			}
-			// Tampilkan urut skor tertinggi secara default
-			terurut := insertionSortSkor(temp, jumlahKarier)
+			terurut = insertionSortSkor(temp, jumlahKarier)
 			tampilRekomendasi(terurut, jumlahKarier)
-
 		case 3:
 			menuPencarian()
-
 		case 4:
 			menuPengurutan(&user)
-
 		case 5:
 			cetakHeader("STATISTIK KECOCOKAN")
 			tampilStatistik(&user)
-
 		case 0:
 			fmt.Println()
 			fmt.Println("  Terima kasih! Semoga sukses dalam perjalanan karier Anda.")
 			fmt.Println()
 			return
-
 		default:
 			fmt.Println("  [!] Pilihan tidak valid.")
 		}
