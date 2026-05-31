@@ -710,7 +710,6 @@ func binarySearch(terurut [MAX_KARIER]Karier, target string) {
 		fmt.Println("  [!] Karier '" + target + "' tidak ditemukan.")
 	}
 }
-
 func menuPencarian() {
 	var pilihan int
 	var query string
