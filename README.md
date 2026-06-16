@@ -1,4 +1,5 @@
 🎯 Aplikasi Rekomendasi Karier Berdasarkan Minat dan Keahlian
+
 A career recommendation CLI application built in Go that helps users discover suitable career paths based on their interests and skills.
 
 ✨ Features
